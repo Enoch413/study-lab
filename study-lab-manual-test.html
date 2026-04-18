@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STUDY LAB 수동 테스트</title>
+    <style>
+      :root {
+        --bg: #f4efe4;
+        --surface: rgba(255, 251, 242, 0.92);
+        --surface-strong: #fffdf7;
+        --line: rgba(44, 44, 40, 0.12);
+        --text: #23211d;
+        --muted: #6f6a5e;
+        --accent: #d85d2a;
+        --accent-deep: #ab3f15;
+        --good: #256f50;
+        --warn: #a45516;
+        --danger: #b42318;
+        --shadow: 0 20px 45px rgba(67, 48, 24, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background:
+          radial-gradient(circle at top left, rgba(216, 93, 42, 0.12), transparent 32%),
+          radial-gradient(circle at top right, rgba(37, 111, 80, 0.08), transparent 28%),
+          linear-gradient(180deg, #f8f4ea 0%, #efe7d5 100%);
+        color: var(--text);
+        font-family:
+          "Segoe UI",
+          "Apple SD Gothic Neo",
+          "Noto Sans KR",
+          sans-serif;
+      }
+
+      body {
+        padding: 16px;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .page-shell {
+        width: min(1440px, 100%);
+        margin: 0 auto;
+      }
+
+      .hero-card,
+      .panel,
+      .tile,
+      .banner,
+      .test-guide {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+      }
+
+      .hero-card {
+        border-radius: 28px;
+        padding: 28px;
+      }
+
+      .hero-kicker,
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .hero-kicker {
+        background: rgba(216, 93, 42, 0.12);
+        color: var(--accent-deep);
+      }
+
+      .hero-title {
+        margin: 18px 0 10px;
+        font-size: clamp(32px, 4.5vw, 56px);
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+      }
+
+      .hero-copy,
+      .subtle,
+      .test-guide p,
+      .test-guide li {
+        color: var(--muted);
+      }
+
+      .hero-copy {
+        font-size: 17px;
+        line-height: 1.7;
+        max-width: 760px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .status-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .status-chip {
+        padding: 14px 16px;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .status-chip strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 15px;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .mode-switch {
+        display: inline-flex;
+        gap: 8px;
+        padding: 6px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .mode-switch button {
+        border: none;
+        background: transparent;
+        border-radius: 999px;
+        padding: 10px 14px;
+        color: var(--muted);
+      }
+
+      .mode-switch button[data-active="true"] {
+        background: var(--accent);
+        color: white;
+      }
+
+      .control-strip {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .control-strip select,
+      .control-strip input,
+      .teacher-tools input {
+        min-width: 220px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 12px 14px;
+        color: var(--text);
+      }
+
+      .test-guide {
+        margin-top: 18px;
+        border-radius: 20px;
+        padding: 18px 20px;
+      }
+
+      .test-guide h3 {
+        margin: 0 0 10px;
+      }
+
+      .test-guide ol,
+      .test-guide ul {
+        margin: 10px 0 0;
+        padding-left: 18px;
+        line-height: 1.6;
+      }
+
+      .board-grid {
+        display: grid;
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .board-grid[data-layout="split"] {
+        grid-template-columns: 0.95fr 1.05fr;
+      }
+
+      .panel {
+        border-radius: 24px;
+        padding: 22px;
+      }
+
+      .panel h2,
+      .panel h3 {
+        margin: 0 0 10px;
+      }
+
+      .metric-row,
+      .teacher-summary-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .metric-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-bottom: 18px;
+      }
+
+      .teacher-summary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-top: 18px;
+      }
+
+      .metric-card {
+        border-radius: 18px;
+        background: var(--surface-strong);
+        border: 1px solid var(--line);
+        padding: 14px 16px;
+      }
+
+      .metric-card strong {
+        display: block;
+        font-size: 24px;
+        margin-top: 6px;
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .button-primary,
+      .button-secondary,
+      .button-danger {
+        border: none;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-weight: 700;
+      }
+
+      .button-primary {
+        background: var(--accent);
+        color: white;
+      }
+
+      .button-secondary {
+        background: rgba(35, 33, 29, 0.08);
+        color: var(--text);
+      }
+
+      .button-danger {
+        background: rgba(180, 35, 24, 0.12);
+        color: var(--danger);
+      }
+
+      .button-primary:disabled,
+      .button-secondary:disabled,
+      .button-danger:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .video-shell {
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        background:
+          linear-gradient(160deg, rgba(216, 93, 42, 0.2), rgba(37, 111, 80, 0.14)),
+          #0f1519;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        min-height: 260px;
+      }
+
+      .video-shell video,
+      .video-shell img {
+        width: 100%;
+        height: 100%;
+        min-height: 260px;
+        display: block;
+        object-fit: cover;
+        background: #0e1419;
+      }
+
+      .video-placeholder {
+        min-height: 260px;
+        display: grid;
+        place-items: center;
+        color: rgba(255, 255, 255, 0.78);
+        text-align: center;
+        padding: 24px;
+      }
+
+      .video-overlay {
+        position: absolute;
+        inset: auto 12px 12px 12px;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .video-footer {
+        position: absolute;
+        inset: auto 12px 52px 12px;
+        padding: 8px 12px;
+        border-radius: 14px;
+        background: rgba(18, 18, 18, 0.5);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .pill {
+        background: rgba(18, 18, 18, 0.66);
+        color: white;
+      }
+
+      .pill[data-tone="good"] {
+        background: rgba(37, 111, 80, 0.88);
+      }
+
+      .pill[data-tone="warn"] {
+        background: rgba(164, 85, 22, 0.9);
+      }
+
+      .pill[data-tone="danger"] {
+        background: rgba(180, 35, 24, 0.9);
+      }
+
+      .teacher-tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-top: 18px;
+      }
+
+      .roster-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .tile {
+        border-radius: 20px;
+        padding: 16px;
+      }
+
+      .student-tile[data-focused="true"] {
+        outline: 2px solid rgba(216, 93, 42, 0.35);
+      }
+
+      .list {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .list-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.74);
+        border: 1px solid var(--line);
+      }
+
+      .banner {
+        margin-top: 16px;
+        padding: 14px 16px;
+        border-radius: 18px;
+      }
+
+      .banner[data-tone="good"] {
+        background: rgba(225, 247, 238, 0.96);
+      }
+
+      .banner[data-tone="warn"] {
+        background: rgba(252, 243, 221, 0.92);
+      }
+
+      .banner[data-tone="danger"] {
+        background: rgba(252, 232, 230, 0.96);
+      }
+
+      .qa-tools {
+        margin-top: 18px;
+        border-top: 1px solid var(--line);
+        padding-top: 18px;
+      }
+
+      .empty-state {
+        margin-top: 18px;
+        padding: 26px 20px;
+        border-radius: 18px;
+        border: 1px dashed rgba(44, 44, 40, 0.2);
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .small {
+        font-size: 13px;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(18, 16, 13, 0.45);
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        z-index: 20;
+      }
+
+      .modal-card {
+        width: min(560px, 100%);
+        background: var(--surface-strong);
+        border-radius: 26px;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        padding: 24px;
+      }
+
+      .modal-card h3 {
+        margin-top: 0;
+      }
+
+      .modal-card ul {
+        margin: 12px 0;
+        padding-left: 20px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      @media (max-width: 1100px) {
+        .hero-grid,
+        .board-grid[data-layout="split"],
+        .teacher-summary-grid,
+        .roster-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        body {
+          padding: 10px;
+        }
+
+        .hero-card,
+        .panel {
+          border-radius: 22px;
+          padding: 18px;
+        }
+
+        .metric-row,
+        .status-list {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-title {
+          font-size: 38px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell" id="app"></div>
+
+    <script>
+      const ROOM_MAIN = "MAIN_ROOM";
+      const ROOM_PENDING = "QUESTION_PENDING";
+      const ROOM_QUESTION = "QUESTION_ROOM";
+      const ROOM_IDLE = "IDLE";
+
+      const QUESTION_NONE = "NONE";
+      const QUESTION_PENDING = "PENDING";
+      const QUESTION_ACCEPTED = "ACCEPTED";
+
+      const MIC_LOCKED = "MUTED_LOCKED";
+      const MIC_OPEN = "OPEN";
+
+      const AUTO_EXIT_MS = 10 * 60 * 1000;
+      const CAPTURE_INTERVAL_MS = 1500;
+
+      const studentSeed = [
+        { id: "student-minseo", name: "김민서" },
+        { id: "student-junho", name: "박준호" },
+        { id: "student-seoyun", name: "이서윤" },
+        { id: "student-haram", name: "최하람" },
+      ];
+
+      const state = {
+        viewMode: "split",
+        selectedStudentId: studentSeed[0].id,
+        search: "",
+        onlyActive: false,
+        isGuideOpen: false,
+        permissionMessage: "",
+        students: createInitialStudents(),
+        previewMap: {},
+      };
+
+      let activeStream = null;
+      let cameraOwnerStudentId = null;
+      let captureTimer = null;
+      const previewCanvas = document.createElement("canvas");
+      const previewContext = previewCanvas.getContext("2d");
+
+      const app = document.getElementById("app");
+
+      render();
+      window.setInterval(tick, 1000);
+
+      document.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-action]");
+        if (!button) {
+          return;
+        }
+
+        const action = button.dataset.action;
+        const studentId = button.dataset.studentId || null;
+
+        switch (action) {
+          case "set-view-mode":
+            state.viewMode = button.dataset.mode;
+            render();
+            break;
+          case "open-guide":
+            state.permissionMessage = "";
+            state.isGuideOpen = true;
+            render();
+            break;
+          case "close-guide":
+            state.isGuideOpen = false;
+            render();
+            break;
+          case "enter-selected":
+            await enterSelectedStudent();
+            break;
+          case "exit-selected":
+            exitStudent(state.selectedStudentId);
+            render();
+            break;
+          case "camera-off":
+            turnCameraOff(state.selectedStudentId);
+            render();
+            break;
+          case "camera-on":
+            await turnCameraOnAgain(state.selectedStudentId);
+            break;
+          case "request-question":
+            requestQuestion(state.selectedStudentId);
+            render();
+            break;
+          case "cancel-question":
+            cancelQuestion(state.selectedStudentId);
+            render();
+            break;
+          case "dismiss-toast":
+            getStudent(state.selectedStudentId).questionEndedToast = "";
+            render();
+            break;
+          case "dismiss-auto-exit":
+            getStudent(state.selectedStudentId).autoExitReason = "";
+            render();
+            break;
+          case "focus-student":
+            state.selectedStudentId = studentId;
+            render();
+            break;
+          case "accept-question":
+            acceptQuestion(studentId);
+            render();
+            break;
+          case "complete-question":
+            completeQuestion(studentId);
+            render();
+            break;
+          case "toggle-active-filter":
+            state.onlyActive = !state.onlyActive;
+            render();
+            break;
+          case "seed-demo-roster":
+            seedDemoRoster();
+            render();
+            break;
+          case "reset-demo":
+            resetDemo();
+            render();
+            break;
+          case "force-timeout":
+            forceCameraTimeout(state.selectedStudentId);
+            render();
+            break;
+          default:
+            break;
+        }
+      });
+
+      document.addEventListener("change", (event) => {
+        const target = event.target;
+        if (target.id === "student-selector") {
+          state.selectedStudentId = target.value;
+          render();
+        }
+      });
+
+      document.addEventListener("input", (event) => {
+        const target = event.target;
+        if (target.id === "teacher-search") {
+          state.search = target.value;
+          render();
+        }
+      });
+
+      window.addEventListener("beforeunload", () => {
+        stopCameraStream();
+      });
+
+      function createInitialStudents() {
+        return studentSeed.map((student) => ({
+          id: student.id,
+          name: student.name,
+          sessionId: null,
+          isEntered: false,
+          connectionStatus: ROOM_IDLE,
+          cameraStatus: "OFF",
+          micPolicy: MIC_LOCKED,
+          enteredAt: null,
+          cameraWarningStartedAt: null,
+          questionStatus: QUESTION_NONE,
+          questionRequestedAt: null,
+          questionAcceptedAt: null,
+          questionEndedToast: "",
+          autoExitReason: "",
+          accumulatedSeconds: 0,
+        }));
+      }
+
+      function getStudent(studentId) {
+        return state.students.find((student) => student.id === studentId);
+      }
+
+      function getSelectedStudent() {
+        return getStudent(state.selectedStudentId);
+      }
+
+      function getTodayStudySeconds(student) {
+        if (!student.isEntered || !student.enteredAt) {
+          return student.accumulatedSeconds;
+        }
+
+        return student.accumulatedSeconds + getDiffSeconds(new Date(student.enteredAt), new Date());
+      }
+
+      function getQuestionQueue() {
+        return state.students
+          .filter((student) => student.questionStatus === QUESTION_PENDING && student.questionRequestedAt)
+          .sort((left, right) => new Date(left.questionRequestedAt) - new Date(right.questionRequestedAt));
+      }
+
+      function hasActiveQuestionRoom() {
+        return state.students.some((student) => student.questionStatus === QUESTION_ACCEPTED);
+      }
+
+      function tick() {
+        sweepAutoExitRules();
+        render();
+      }
+
+      function sweepAutoExitRules() {
+        const now = Date.now();
+
+        state.students.forEach((student) => {
+          if (!student.isEntered || !student.cameraWarningStartedAt || student.cameraStatus !== "OFF") {
+            return;
+          }
+
+          if (now - new Date(student.cameraWarningStartedAt).getTime() >= AUTO_EXIT_MS) {
+            finalizeExit(student, "카메라가 10분 이상 꺼져 있어 자동 퇴실 처리되었습니다.");
+          }
+        });
+      }
+
+      async function enterSelectedStudent() {
+        const student = getSelectedStudent();
+        if (!student || student.isEntered) {
+          return;
+        }
+
+        state.permissionMessage = "";
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              facingMode: "user",
+            },
+            audio: false,
+          });
+
+          stopCameraStream();
+          activeStream = stream;
+          cameraOwnerStudentId = student.id;
+          startCaptureLoop();
+
+          student.sessionId = createSessionId();
+          student.isEntered = true;
+          student.connectionStatus = ROOM_MAIN;
+          student.cameraStatus = "ON";
+          student.micPolicy = MIC_LOCKED;
+          student.enteredAt = new Date().toISOString();
+          student.cameraWarningStartedAt = null;
+          student.questionStatus = QUESTION_NONE;
+          student.questionRequestedAt = null;
+          student.questionAcceptedAt = null;
+          student.questionEndedToast = "";
+          student.autoExitReason = "";
+          state.isGuideOpen = false;
+
+          render();
+        } catch (error) {
+          state.permissionMessage = "카메라를 허용해야 입실할 수 있습니다.";
+          state.isGuideOpen = true;
+          render();
+        }
+      }
+
+      function exitStudent(studentId) {
+        const student = getStudent(studentId);
+        if (!student || !student.isEntered) {
+          return;
+        }
+
+        finalizeExit(student, "");
+      }
+
+      function finalizeExit(student, autoExitReason) {
+        if (student.enteredAt) {
+          student.accumulatedSeconds += getDiffSeconds(new Date(student.enteredAt), new Date());
+        }
+
+        student.sessionId = null;
+        student.isEntered = false;
+        student.connectionStatus = ROOM_IDLE;
+        student.cameraStatus = autoExitReason ? "OFF" : student.cameraStatus;
+        student.micPolicy = MIC_LOCKED;
+        student.enteredAt = null;
+        student.cameraWarningStartedAt = null;
+        student.questionStatus = QUESTION_NONE;
+        student.questionRequestedAt = null;
+        student.questionAcceptedAt = null;
+        student.questionEndedToast = "";
+        student.autoExitReason = autoExitReason || "";
+        delete state.previewMap[student.id];
+
+        if (cameraOwnerStudentId === student.id) {
+          stopCameraStream();
+        }
+      }
+
+      function turnCameraOff(studentId) {
+        const student = getStudent(studentId);
+        if (!student || !student.isEntered) {
+          return;
+        }
+
+        student.cameraStatus = "OFF";
+        if (!student.cameraWarningStartedAt) {
+          student.cameraWarningStartedAt = new Date().toISOString();
+        }
+
+        if (cameraOwnerStudentId === student.id && activeStream) {
+          activeStream.getVideoTracks().forEach((track) => {
+            track.enabled = false;
+          });
+        }
+      }
+
+      async function turnCameraOnAgain(studentId) {
+        const student = getStudent(studentId);
+        if (!student || !student.isEntered) {
+          return;
+        }
+
+        if (cameraOwnerStudentId === student.id && activeStream) {
+          activeStream.getVideoTracks().forEach((track) => {
+            track.enabled = true;
+          });
+          student.cameraStatus = "ON";
+          student.cameraWarningStartedAt = null;
+          render();
+          return;
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              facingMode: "user",
+            },
+            audio: false,
+          });
+
+          stopCameraStream();
+          activeStream = stream;
+          cameraOwnerStudentId = student.id;
+          startCaptureLoop();
+
+          student.cameraStatus = "ON";
+          student.cameraWarningStartedAt = null;
+          student.autoExitReason = "";
+          render();
+        } catch (error) {
+          state.permissionMessage = "카메라를 다시 켜려면 브라우저 권한을 허용해 주세요.";
+          state.isGuideOpen = true;
+          render();
+        }
+      }
+
+      function requestQuestion(studentId) {
+        const student = getStudent(studentId);
+        if (!student || !student.isEntered) {
+          return;
+        }
+
+        if (student.connectionStatus !== ROOM_MAIN || student.questionStatus !== QUESTION_NONE) {
+          return;
+        }
+
+        student.connectionStatus = ROOM_PENDING;
+        student.questionStatus = QUESTION_PENDING;
+        student.questionRequestedAt = new Date().toISOString();
+        student.questionAcceptedAt = null;
+        student.questionEndedToast = "";
+      }
+
+      function cancelQuestion(studentId) {
+        const student = getStudent(studentId);
+        if (!student || student.questionStatus !== QUESTION_PENDING) {
+          return;
+        }
+
+        student.connectionStatus = student.isEntered ? ROOM_MAIN : ROOM_IDLE;
+        student.questionStatus = QUESTION_NONE;
+        student.questionRequestedAt = null;
+      }
+
+      function acceptQuestion(studentId) {
+        const student = getStudent(studentId);
+        if (!student || student.questionStatus !== QUESTION_PENDING) {
+          return;
+        }
+
+        if (hasActiveQuestionRoom()) {
+          return;
+        }
+
+        const queue = getQuestionQueue();
+        if (!queue.length || queue[0].id !== studentId) {
+          return;
+        }
+
+        student.connectionStatus = ROOM_QUESTION;
+        student.questionStatus = QUESTION_ACCEPTED;
+        student.questionAcceptedAt = new Date().toISOString();
+        student.micPolicy = MIC_OPEN;
+      }
+
+      function completeQuestion(studentId) {
+        const student = getStudent(studentId);
+        if (!student || student.questionStatus !== QUESTION_ACCEPTED) {
+          return;
+        }
+
+        student.connectionStatus = ROOM_MAIN;
+        student.questionStatus = QUESTION_NONE;
+        student.questionRequestedAt = null;
+        student.questionAcceptedAt = null;
+        student.questionEndedToast = "질문이 종료되어 전체 공부방으로 돌아왔습니다.";
+        student.micPolicy = MIC_LOCKED;
+      }
+
+      function seedDemoRoster() {
+        const demoStudents = state.students.filter((student) => student.id !== state.selectedStudentId);
+
+        if (demoStudents[0]) {
+          demoStudents[0].isEntered = true;
+          demoStudents[0].connectionStatus = ROOM_MAIN;
+          demoStudents[0].cameraStatus = "ON";
+          demoStudents[0].micPolicy = MIC_LOCKED;
+          demoStudents[0].enteredAt = new Date(Date.now() - 27 * 60 * 1000).toISOString();
+          demoStudents[0].accumulatedSeconds = 3600;
+          state.previewMap[demoStudents[0].id] = {
+            imageSrc: createPlaceholderPreview(demoStudents[0].name, "#2f6f56", "입실"),
+            updatedAt: Date.now(),
+          };
+        }
+
+        if (demoStudents[1]) {
+          demoStudents[1].isEntered = true;
+          demoStudents[1].connectionStatus = ROOM_PENDING;
+          demoStudents[1].cameraStatus = "ON";
+          demoStudents[1].micPolicy = MIC_LOCKED;
+          demoStudents[1].enteredAt = new Date(Date.now() - 11 * 60 * 1000).toISOString();
+          demoStudents[1].accumulatedSeconds = 1400;
+          demoStudents[1].questionStatus = QUESTION_PENDING;
+          demoStudents[1].questionRequestedAt = new Date(Date.now() - 90 * 1000).toISOString();
+          state.previewMap[demoStudents[1].id] = {
+            imageSrc: createPlaceholderPreview(demoStudents[1].name, "#b07b28", "대기"),
+            updatedAt: Date.now(),
+          };
+        }
+
+        if (demoStudents[2]) {
+          demoStudents[2].isEntered = true;
+          demoStudents[2].connectionStatus = ROOM_MAIN;
+          demoStudents[2].cameraStatus = "ON";
+          demoStudents[2].micPolicy = MIC_LOCKED;
+          demoStudents[2].enteredAt = new Date(Date.now() - 42 * 60 * 1000).toISOString();
+          demoStudents[2].accumulatedSeconds = 5100;
+          state.previewMap[demoStudents[2].id] = {
+            imageSrc: createPlaceholderPreview(demoStudents[2].name, "#4f6084", "입실"),
+            updatedAt: Date.now(),
+          };
+        }
+      }
+
+      function resetDemo() {
+        stopCameraStream();
+        state.students = createInitialStudents();
+        state.previewMap = {};
+        state.selectedStudentId = studentSeed[0].id;
+        state.search = "";
+        state.onlyActive = false;
+        state.isGuideOpen = false;
+        state.permissionMessage = "";
+      }
+
+      function forceCameraTimeout(studentId) {
+        const student = getStudent(studentId);
+        if (!student || !student.isEntered) {
+          return;
+        }
+
+        student.cameraStatus = "OFF";
+        student.cameraWarningStartedAt = new Date(Date.now() - AUTO_EXIT_MS - 1000).toISOString();
+      }
+
+      function startCaptureLoop() {
+        if (captureTimer) {
+          window.clearInterval(captureTimer);
+        }
+
+        captureFrame();
+        captureTimer = window.setInterval(captureFrame, CAPTURE_INTERVAL_MS);
+      }
+
+      function captureFrame() {
+        if (!activeStream || !cameraOwnerStudentId || !previewContext) {
+          return;
+        }
+
+        const owner = getStudent(cameraOwnerStudentId);
+        if (!owner || !owner.isEntered || owner.cameraStatus !== "ON") {
+          return;
+        }
+
+        const video = document.getElementById("student-live-video");
+        if (!video || video.readyState < 2) {
+          return;
+        }
+
+        const width = video.videoWidth || 640;
+        const height = video.videoHeight || 360;
+        previewCanvas.width = width;
+        previewCanvas.height = height;
+        previewContext.drawImage(video, 0, 0, width, height);
+
+        state.previewMap[cameraOwnerStudentId] = {
+          imageSrc: previewCanvas.toDataURL("image/jpeg", 0.72),
+          updatedAt: Date.now(),
+        };
+
+        const teacherImage = document.querySelector('[data-preview-student-id="' + cameraOwnerStudentId + '"]');
+        if (teacherImage) {
+          teacherImage.src = state.previewMap[cameraOwnerStudentId].imageSrc;
+        }
+      }
+
+      function stopCameraStream() {
+        if (captureTimer) {
+          window.clearInterval(captureTimer);
+          captureTimer = null;
+        }
+
+        if (activeStream) {
+          activeStream.getTracks().forEach((track) => track.stop());
+          activeStream = null;
+        }
+
+        cameraOwnerStudentId = null;
+      }
+
+      function render() {
+        const selected = getSelectedStudent();
+        const filteredStudents = getFilteredStudents();
+        const enteredCount = state.students.filter((student) => student.isEntered).length;
+        const pendingCount = state.students.filter((student) => student.questionStatus === QUESTION_PENDING).length;
+        const questionRoomCount = state.students.filter((student) => student.questionStatus === QUESTION_ACCEPTED).length;
+        const layout = state.viewMode === "split" ? "split" : "single";
+
+        app.innerHTML =
+          renderHero(selected) +
+          renderGuide() +
+          '<section class="board-grid" data-layout="' +
+          escapeHtml(layout) +
+          '">' +
+          (state.viewMode === "student" || state.viewMode === "split" ? renderStudentPanel(selected) : "") +
+          (state.viewMode === "teacher" || state.viewMode === "split"
+            ? renderTeacherPanel(filteredStudents, enteredCount, pendingCount, questionRoomCount)
+            : "") +
+          "</section>" +
+          renderModal(selected);
+
+        syncLiveVideo();
+      }
+
+      function renderHero(selected) {
+        return (
+          '<section class="hero-card">' +
+          '<span class="hero-kicker">STUDY LAB 수동 테스트</span>' +
+          '<div class="hero-grid">' +
+          "<div>" +
+          '<h1 class="hero-title">바로 눌러서 테스트하는 프로토타입</h1>' +
+          '<p class="hero-copy">이 HTML 파일을 바로 열면 됩니다. 설치 없이 카메라 필수 입실, 강사용 CCTV 화면, 질문 요청 흐름, 질문방 이동 및 복귀, 카메라 미사용 자동 퇴실까지 바로 확인할 수 있습니다.</p>' +
+          "</div>" +
+          '<div class="status-list">' +
+          '<div class="status-chip"><strong>카메라 필수</strong>카메라 권한을 거부하면 입실할 수 없습니다.</div>' +
+          '<div class="status-chip"><strong>강사용 CCTV</strong>강사 화면에서 학생 목록과 영상 타일을 확인합니다.</div>' +
+          '<div class="status-chip"><strong>질문방 이동</strong>강사는 먼저 들어온 질문 요청부터 수락합니다.</div>' +
+          '<div class="status-chip"><strong>자동 퇴실</strong>카메라가 10분 이상 꺼져 있으면 자동 퇴실됩니다.</div>' +
+          "</div>" +
+          "</div>" +
+          '<div class="toolbar">' +
+          '<div class="mode-switch">' +
+          renderModeButton("student", "학생 화면") +
+          renderModeButton("teacher", "강사 화면") +
+          renderModeButton("split", "분할 보기") +
+          "</div>" +
+          '<div class="control-strip">' +
+          '<label class="small">테스트 학생</label>' +
+          '<select id="student-selector">' +
+          state.students
+            .map((student) => {
+              return (
+                '<option value="' +
+                escapeHtml(student.id) +
+                '"' +
+                (student.id === state.selectedStudentId ? " selected" : "") +
+                ">" +
+                escapeHtml(student.name) +
+                "</option>"
+              );
+            })
+            .join("") +
+          "</select>" +
+          '<span class="subtle small">선택된 학생: ' +
+          escapeHtml(selected.name) +
+          "</span>" +
+          "</div>" +
+          "</div>" +
+          '<section class="test-guide">' +
+          "<h3>이 파일 테스트 방법</h3>" +
+          "<ol>" +
+          "<li><strong>입실하기</strong>를 누른 뒤 카메라를 허용합니다.</li>" +
+          "<li>학생 화면에 본인 영상이 나오고, 강사 화면에 CCTV처럼 보이는지 확인합니다.</li>" +
+          "<li><strong>질문 요청하기</strong>를 누른 뒤 강사 화면에서 수락합니다.</li>" +
+          "<li>질문 종료 후 학생이 전체 공부방으로 다시 돌아오는지 확인합니다.</li>" +
+          "<li>빠른 확인이 필요하면 카메라를 끄고 QA 버튼으로 자동 퇴실 상황을 강제로 만듭니다.</li>" +
+          "</ol>" +
+          '<ul><li><strong>샘플 학생 채우기</strong>를 누르면 강사 화면에 테스트용 학생이 추가됩니다.</li><li>이 파일은 서버 없는 수동 프로토타입이라 마이크 동작은 상태 문구로만 표현됩니다.</li></ul>' +
+          "</section>" +
+          "</section>"
+        );
+      }
+
+      function renderModeButton(mode, label) {
+        return (
+          '<button data-action="set-view-mode" data-mode="' +
+          escapeHtml(mode) +
+          '" data-active="' +
+          String(state.viewMode === mode) +
+          '">' +
+          escapeHtml(label) +
+          "</button>"
+        );
+      }
+
+      function renderGuide() {
+        return "";
+      }
+
+      function renderStudentPanel(student) {
+        const roomLabel =
+          student.connectionStatus === ROOM_QUESTION ? "1:1 질문방" : "전체 공부방";
+        const streamOwnedBySelected = cameraOwnerStudentId === student.id && activeStream;
+        const preview = state.previewMap[student.id];
+
+        return (
+          '<section class="panel">' +
+          '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">' +
+          "<div>" +
+          "<h2>학생 화면</h2>" +
+          '<p class="subtle">' +
+          escapeHtml(student.name) +
+          " | " +
+          escapeHtml(roomLabel) +
+          "</p>" +
+          "</div>" +
+          '<span class="pill" data-tone="' +
+          (student.cameraStatus === "ON" ? "good" : "warn") +
+          '">' +
+          (student.cameraStatus === "ON" ? "카메라 켜짐" : "카메라 꺼짐") +
+          "</span>" +
+          "</div>" +
+          '<div class="metric-row">' +
+          renderMetricCard("현재 상태", formatConnectionStatus(student.connectionStatus)) +
+          renderMetricCard("오늘 공부 시간", formatDuration(getTodayStudySeconds(student))) +
+          renderMetricCard("마이크 정책", student.micPolicy === MIC_OPEN ? "질문방에서 켜짐" : "전체방에서 항상 꺼짐") +
+          "</div>" +
+          renderVideoShell({
+            title: "내 영상",
+            stream: streamOwnedBySelected,
+            imageSrc: !streamOwnedBySelected && preview ? preview.imageSrc : "",
+            mirrored: true,
+            statusText: student.cameraStatus === "ON" ? "카메라 송출 중" : "카메라 꺼짐",
+            tone: student.cameraStatus === "ON" ? "good" : "warn",
+            subtitle: "아직 입실 전입니다. 입실하면 이 영역에 카메라 화면이 표시됩니다.",
+            footerText:
+              student.connectionStatus === ROOM_QUESTION
+                ? "질문방에서는 영상이 유지되고 마이크가 자동으로 켜집니다."
+                : "전체 공부방에서는 카메라를 유지하고 마이크는 항상 꺼진 상태로 고정됩니다.",
+          }) +
+          '<div class="button-row" style="margin-top:16px;">' +
+          (!student.isEntered
+            ? '<button class="button-primary" data-action="open-guide">입실하기</button>'
+            : '<button class="button-primary" data-action="exit-selected">퇴실하기</button>' +
+              (student.cameraStatus === "ON"
+                ? '<button class="button-secondary" data-action="camera-off">카메라 끄기</button>'
+                : '<button class="button-primary" data-action="camera-on">카메라 다시 켜기</button>') +
+              (student.questionStatus === QUESTION_NONE && student.connectionStatus === ROOM_MAIN
+                ? '<button class="button-secondary" data-action="request-question">질문 요청하기</button>'
+                : "") +
+              (student.questionStatus === QUESTION_PENDING
+                ? '<button class="button-danger" data-action="cancel-question">질문 요청 취소</button>'
+                : "")) +
+          "</div>" +
+          renderStudentBanners(student) +
+          '<div class="qa-tools">' +
+          "<h3>QA 바로가기</h3>" +
+          '<div class="button-row">' +
+          '<button class="button-secondary" data-action="seed-demo-roster">샘플 학생 채우기</button>' +
+          '<button class="button-secondary" data-action="reset-demo">초기화</button>' +
+          '<button class="button-danger" data-action="force-timeout">카메라 타임아웃 강제 실행</button>' +
+          "</div>" +
+          '<p class="subtle small" style="margin-top:12px;">이 버튼은 수동 테스트를 위해 10분 카메라 미사용 규칙을 바로 발생시킵니다.</p>' +
+          "</div>" +
+          "</section>"
+        );
+      }
+
+      function renderStudentBanners(student) {
+        let html = "";
+
+        if (student.connectionStatus === ROOM_MAIN) {
+          html +=
+            '<div class="banner" data-tone="good">전체 공부방에서는 마이크가 항상 꺼져 있으며, 카메라는 반드시 켜져 있어야 합니다.</div>';
+        }
+
+        if (student.connectionStatus === ROOM_PENDING) {
+          html +=
+            '<div class="banner" data-tone="warn">질문 요청이 접수되었습니다. 강사 화면에서 수락하면 1:1 질문방으로 이동합니다.</div>';
+        }
+
+        if (student.connectionStatus === ROOM_QUESTION) {
+          html +=
+            '<div class="banner" data-tone="good">현재 1:1 질문방에 있습니다. 영상은 유지되고 마이크가 켜집니다.</div>';
+        }
+
+        if (student.isEntered && student.cameraStatus === "OFF" && student.cameraWarningStartedAt) {
+          const offSeconds = getDiffSeconds(new Date(student.cameraWarningStartedAt), new Date());
+          html +=
+            '<div class="banner" data-tone="danger">카메라가 ' +
+            escapeHtml(formatDuration(offSeconds)) +
+            ' 동안 꺼져 있습니다. 10분이 지나면 자동 퇴실됩니다.</div>';
+        }
+
+        if (student.questionEndedToast) {
+          html +=
+            '<div class="banner" data-tone="good"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;"><span>' +
+            escapeHtml(student.questionEndedToast) +
+            '</span><button class="button-secondary" data-action="dismiss-toast">닫기</button></div></div>';
+        }
+
+        if (student.autoExitReason) {
+          html +=
+            '<div class="banner" data-tone="danger"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;"><span>' +
+            escapeHtml(student.autoExitReason) +
+            '</span><button class="button-secondary" data-action="dismiss-auto-exit">확인</button></div></div>';
+        }
+
+        return html;
+      }
+
+      function renderTeacherPanel(filteredStudents, enteredCount, pendingCount, questionRoomCount) {
+        return (
+          '<section class="panel">' +
+          '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">' +
+          "<div>" +
+          "<h2>강사 현황판</h2>" +
+          '<p class="subtle">전체 학생 영상, 공부 시간, 카메라 상태, 질문 흐름을 한 화면에서 확인합니다.</p>' +
+          "</div>" +
+          '<span class="pill" data-tone="' +
+          (enteredCount > 0 ? "good" : "warn") +
+          '">' +
+          (enteredCount > 0 ? "입실 중 " + enteredCount + "명" : "현재 입실 학생 없음") +
+          "</span>" +
+          "</div>" +
+          '<div class="teacher-summary-grid">' +
+          renderMetricCard("전체 학생", String(state.students.length)) +
+          renderMetricCard("현재 입실", String(enteredCount)) +
+          renderMetricCard("질문 대기", String(pendingCount)) +
+          renderMetricCard("질문 진행 중", String(questionRoomCount)) +
+          "</div>" +
+          '<div class="teacher-tools">' +
+          '<input id="teacher-search" placeholder="학생 이름 검색" value="' +
+          escapeAttribute(state.search) +
+          '" />' +
+          '<button class="button-secondary" data-action="toggle-active-filter">' +
+          (state.onlyActive ? "전체 보기" : "입실 중만 보기") +
+          "</button>" +
+          "</div>" +
+          (filteredStudents.length
+            ? '<div class="roster-grid">' +
+              filteredStudents
+                .map((student) => {
+                  return renderTeacherTile(student);
+                })
+                .join("") +
+              "</div>"
+            : '<div class="empty-state">현재 조건에 맞는 학생이 없습니다.</div>') +
+          '<div class="banner" data-tone="good">강사는 질문 대기 순서대로 수락하며, 학생 영상과 공부 시간을 한눈에 확인할 수 있습니다.</div>' +
+          "</section>"
+        );
+      }
+
+      function renderTeacherTile(student) {
+        const preview = state.previewMap[student.id];
+        const queue = getQuestionQueue();
+        const isFirstPending = queue.length && queue[0].id === student.id;
+        const hasQuestionRoom = hasActiveQuestionRoom();
+
+        return (
+          '<article class="tile student-tile" data-focused="' +
+          String(student.id === state.selectedStudentId) +
+          '">' +
+          renderVideoShell({
+            title: student.name,
+            stream: false,
+            imageSrc: preview ? preview.imageSrc : "",
+            mirrored: false,
+            tone: student.cameraStatus === "ON" ? "good" : "warn",
+            statusText: student.cameraStatus === "ON" ? "카메라 켜짐" : "카메라 꺼짐",
+            subtitle: student.isEntered
+              ? "입실 중이지만 아직 실시간 미리보기는 연결되지 않았습니다."
+              : "아직 입실하지 않은 학생입니다.",
+            footerText: preview
+              ? "학생 카메라 화면이 CCTV 미리보기로 갱신되고 있습니다."
+              : student.questionStatus === QUESTION_ACCEPTED
+                ? "질문방이 진행 중이며 영상은 계속 유지되어야 합니다."
+                : "아직 미리보기가 없습니다. 샘플 학생 채우기 또는 실제 입실로 확인해 주세요.",
+            studentId: student.id,
+          }) +
+          '<div class="list">' +
+          renderListItem("현재 상태", formatConnectionStatus(student.connectionStatus)) +
+          renderListItem("오늘 공부 시간", formatDuration(getTodayStudySeconds(student))) +
+          renderListItem("질문 상태", formatQuestionStatus(student)) +
+          renderListItem("마이크", student.micPolicy === MIC_OPEN ? "켜짐" : "강제 꺼짐") +
+          "</div>" +
+          '<div class="button-row" style="margin-top:16px;">' +
+          '<button class="button-secondary" data-action="focus-student" data-student-id="' +
+          escapeHtml(student.id) +
+          '">학생 보기</button>' +
+          '<button class="button-primary" data-action="accept-question" data-student-id="' +
+          escapeHtml(student.id) +
+          '"' +
+          (isFirstPending && !hasQuestionRoom ? "" : " disabled") +
+          ">질문 수락</button>" +
+          '<button class="button-secondary" data-action="complete-question" data-student-id="' +
+          escapeHtml(student.id) +
+          '"' +
+          (student.questionStatus === QUESTION_ACCEPTED ? "" : " disabled") +
+          ">질문 종료</button>" +
+          "</div>" +
+          "</article>"
+        );
+      }
+
+      function renderVideoShell(options) {
+        return (
+          '<div class="video-shell">' +
+          (options.stream
+            ? '<video id="student-live-video" autoplay muted playsinline style="transform:' +
+              (options.mirrored ? "scaleX(-1)" : "none") +
+              ';"></video>'
+            : options.imageSrc
+              ? '<img ' +
+                (options.studentId ? 'data-preview-student-id="' + escapeHtml(options.studentId) + '" ' : "") +
+                'src="' +
+                escapeAttribute(options.imageSrc) +
+                '" alt="' +
+                escapeAttribute(options.title) +
+                '" style="transform:' +
+                (options.mirrored ? "scaleX(-1)" : "none") +
+                ';" />'
+              : '<div class="video-placeholder">' + escapeHtml(options.subtitle) + "</div>") +
+          '<div class="video-overlay">' +
+          '<span class="pill">' +
+          escapeHtml(options.title) +
+          "</span>" +
+          '<span class="pill" data-tone="' +
+          escapeHtml(options.tone) +
+          '">' +
+          escapeHtml(options.statusText) +
+          "</span>" +
+          "</div>" +
+          '<div class="video-footer">' +
+          escapeHtml(options.footerText) +
+          "</div>" +
+          "</div>"
+        );
+      }
+
+      function renderMetricCard(label, value) {
+        return '<div class="metric-card">' + escapeHtml(label) + "<strong>" + escapeHtml(value) + "</strong></div>";
+      }
+
+      function renderListItem(label, value) {
+        return '<div class="list-item"><span>' + escapeHtml(label) + "</span><strong>" + escapeHtml(value) + "</strong></div>";
+      }
+
+      function renderModal(student) {
+        if (!state.isGuideOpen) {
+          return "";
+        }
+
+        return (
+          '<div class="modal-backdrop">' +
+          '<div class="modal-card">' +
+          "<h3>입실 전 카메라 안내</h3>" +
+          '<p class="subtle">STUDY LAB은 입실 전에 카메라 허용이 반드시 필요합니다. 카메라를 거부하면 입실할 수 없습니다.</p>' +
+          "<ul>" +
+          "<li>카메라를 허용해야만 입실할 수 있습니다.</li>" +
+          "<li>강사와 관리자는 학생 영상을 CCTV처럼 확인합니다.</li>" +
+          "<li>질문방으로 이동해도 영상은 유지되고 마이크는 켜집니다.</li>" +
+          "<li>카메라가 10분 이상 꺼져 있으면 자동 퇴실됩니다.</li>" +
+          "</ul>" +
+          (state.permissionMessage
+            ? '<div class="banner" data-tone="danger">' + escapeHtml(state.permissionMessage) + "</div>"
+            : "") +
+          '<div class="button-row" style="margin-top:16px;">' +
+          '<button class="button-primary" data-action="enter-selected">카메라 허용 후 입실</button>' +
+          '<button class="button-secondary" data-action="close-guide">취소</button>' +
+          "</div>" +
+          '<p class="subtle small" style="margin-top:12px;">현재 선택된 학생: ' +
+          escapeHtml(student.name) +
+          "</p>" +
+          "</div>" +
+          "</div>"
+        );
+      }
+
+      function syncLiveVideo() {
+        const video = document.getElementById("student-live-video");
+        const selected = getSelectedStudent();
+
+        if (!video) {
+          return;
+        }
+
+        if (activeStream && cameraOwnerStudentId === selected.id) {
+          video.srcObject = activeStream;
+          video.muted = true;
+        } else {
+          video.srcObject = null;
+        }
+      }
+
+      function getFilteredStudents() {
+        return state.students.filter((student) => {
+          if (state.onlyActive && !student.isEntered) {
+            return false;
+          }
+
+          if (!state.search.trim()) {
+            return true;
+          }
+
+          return student.name.toLowerCase().includes(state.search.trim().toLowerCase());
+        });
+      }
+
+      function formatConnectionStatus(status) {
+        switch (status) {
+          case ROOM_MAIN:
+            return "전체 공부방";
+          case ROOM_PENDING:
+            return "질문 대기";
+          case ROOM_QUESTION:
+            return "1:1 질문방";
+          default:
+            return "미입실";
+        }
+      }
+
+      function formatQuestionStatus(student) {
+        if (student.questionStatus === QUESTION_PENDING) {
+          const queue = getQuestionQueue();
+          const index = queue.findIndex((queuedStudent) => queuedStudent.id === student.id);
+          return index >= 0 ? "대기 " + (index + 1) + "번" : "대기 중";
+        }
+
+        if (student.questionStatus === QUESTION_ACCEPTED) {
+          return "진행 중";
+        }
+
+        return "없음";
+      }
+
+      function formatDuration(totalSeconds) {
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return hours + "시간 " + minutes + "분 " + seconds + "초";
+      }
+
+      function getDiffSeconds(startAt, endAt) {
+        return Math.max(0, Math.floor((endAt.getTime() - startAt.getTime()) / 1000));
+      }
+
+      function createSessionId() {
+        if (window.crypto && window.crypto.randomUUID) {
+          return window.crypto.randomUUID();
+        }
+
+        return "session-" + Math.random().toString(36).slice(2);
+      }
+
+      function createPlaceholderPreview(studentName, background, badge) {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.width = 960;
+        canvas.height = 540;
+
+        if (!context) {
+          return "";
+        }
+
+        context.fillStyle = background;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        context.fillStyle = "rgba(255,255,255,0.12)";
+        context.beginPath();
+        context.arc(800, 110, 120, 0, Math.PI * 2);
+        context.fill();
+
+        context.fillStyle = "rgba(255,255,255,0.95)";
+        context.font = "700 78px Segoe UI";
+        context.fillText(getInitials(studentName), 74, 290);
+
+        context.font = "600 34px Segoe UI";
+        context.fillText(studentName, 74, 352);
+
+        context.fillStyle = "rgba(18,18,18,0.36)";
+        context.fillRect(74, 390, 220, 64);
+        context.fillStyle = "#ffffff";
+        context.font = "700 28px Segoe UI";
+        context.fillText(badge, 112, 432);
+
+        return canvas.toDataURL("image/png");
+      }
+
+      function getInitials(name) {
+        return name
+          .split(" ")
+          .filter(Boolean)
+          .map((part) => part[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase();
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function escapeAttribute(value) {
+        return escapeHtml(value);
+      }
+    </script>
+  </body>
+</html>
