@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
-import { DashboardDomain, type DashboardDomainDependencies } from "@/features/study-lab/server/domains/dashboard.domain";
-import {
-  StudyLabAuthService,
-  createPlaceholderCodeLabAuthAdapter,
-} from "@/features/study-lab/server/services/study-lab-auth.service";
+import { createStudyLabRuntime } from "@/features/study-lab/server/services/study-lab-runtime.service";
 import { toStudyLabErrorResponse } from "@/features/study-lab/server/services/study-lab-error.service";
 
 export async function GET(request: Request) {
   try {
-    const authService = getAuthService();
-    const dashboardDomain = getDashboardDomain();
+    const { authService, dashboardDomain } = createStudyLabRuntime();
 
     const viewer = await authService.requireViewerWithRole(request, ["student"]);
     const data = await dashboardDomain.getStudentDashboard(viewer);
@@ -25,13 +20,4 @@ export async function GET(request: Request) {
     const { status, body } = toStudyLabErrorResponse(error);
     return NextResponse.json(body, { status });
   }
-}
-
-function getAuthService(): StudyLabAuthService {
-  return new StudyLabAuthService(createPlaceholderCodeLabAuthAdapter());
-}
-
-function getDashboardDomain(): DashboardDomain {
-  // TODO: Replace placeholder dependencies with concrete repository implementations.
-  return new DashboardDomain({} as DashboardDomainDependencies);
 }

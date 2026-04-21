@@ -1,3 +1,4 @@
+import type { QuestionCompleteReason } from "./domain";
 import type {
   PendingQuestionsDto,
   QuestionAcceptResultDto,
@@ -40,7 +41,7 @@ export interface CreateQuestionRequestBody {
 }
 
 export interface CompleteQuestionRequestBody {
-  reason: string;
+  reason: QuestionCompleteReason;
 }
 
 export interface TeacherDashboardQuery {

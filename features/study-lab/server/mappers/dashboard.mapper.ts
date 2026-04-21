@@ -83,6 +83,7 @@ export function toTeacherDashboardItemDto(args: {
     todayStudySeconds: args.todayStudySeconds,
     cameraStatus: args.session?.cameraStatus ?? null,
     questionStatus: args.question?.status ?? "NONE",
+    questionId: args.question?.id ?? null,
     roomLabel: args.roomLabel ?? (args.session ? MAIN_STUDY_ROOM_LABEL : null),
   };
 }

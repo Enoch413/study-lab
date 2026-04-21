@@ -1,29 +1,32 @@
 import { NextResponse } from "next/server";
-import { toSessionExitResultDto } from "@/features/study-lab/server/mappers/session.mapper";
 import { createStudyLabRuntime } from "@/features/study-lab/server/services/study-lab-runtime.service";
 import { toStudyLabErrorResponse } from "@/features/study-lab/server/services/study-lab-error.service";
-import { parseSessionIdParam } from "@/features/study-lab/validators/session.validator";
+import { parseQuestionIdParam } from "@/features/study-lab/validators/question.validator";
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { authService, sessionDomain } = createStudyLabRuntime();
-
+    const { authService, questionDomain } = createStudyLabRuntime();
     const viewer = await authService.requireViewerWithRole(request, ["student"]);
     const { id } = await context.params;
-    const sessionId = parseSessionIdParam(id);
-
-    const result = await sessionDomain.exitSession({
+    const questionId = parseQuestionIdParam(id);
+    const question = await questionDomain.cancelQuestionRequest({
       viewer,
-      sessionId,
+      questionId,
     });
 
     return NextResponse.json(
       {
         ok: true,
-        data: toSessionExitResultDto(result.alreadyEnded, result.session, result.todayStudySeconds),
+        data: {
+          question: {
+            id: question.id,
+            status: question.status,
+            endedAt: question.endedAt?.toISOString() ?? null,
+          },
+        },
       },
       { status: 200 },
     );

@@ -1,5 +1,6 @@
 import { QUESTION_COMPLETE_REASONS } from "../constants/enums";
 import { STUDY_LAB_ERROR_CODES } from "../constants/error-codes";
+import type { QuestionCompleteReason } from "../types/domain";
 import type { CompleteQuestionRequestBody, CreateQuestionRequestBody } from "../types/api";
 import { createStudyLabError } from "../server/services/study-lab-error.service";
 
@@ -37,7 +38,7 @@ export function parseCompleteQuestionBody(payload: unknown): CompleteQuestionReq
     );
   }
 
-  return { reason };
+  return { reason: reason as QuestionCompleteReason };
 }
 
 export function parseQuestionIdParam(value: unknown): string {

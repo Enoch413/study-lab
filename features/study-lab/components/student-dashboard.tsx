@@ -1,13 +1,28 @@
 "use client";
 
 import { QUESTION_ROOM_LABEL, MAIN_STUDY_ROOM_LABEL } from "../constants/room-labels";
-import type { PrototypeConnectionStatus, PrototypeQuestionStatus } from "../types/prototype";
 import { LiveVideoTile } from "./live-video-tile";
+
+export type StudentConnectionStatus =
+  | "IDLE"
+  | "MAIN_ROOM"
+  | "QUESTION_PENDING"
+  | "QUESTION_ROOM"
+  | "EXITED"
+  | "DISCONNECTED";
+
+export type StudentQuestionStatus =
+  | "NONE"
+  | "PENDING"
+  | "ACCEPTED"
+  | "COMPLETED"
+  | "CANCELED"
+  | "FAILED";
 
 interface StudentDashboardProps {
   studentName: string;
   isEntered: boolean;
-  connectionStatus: PrototypeConnectionStatus;
+  connectionStatus: StudentConnectionStatus;
   cameraStatus: "ON" | "OFF";
   micPolicy: "MUTED_LOCKED" | "OPEN";
   studySeconds: number;
@@ -15,9 +30,10 @@ interface StudentDashboardProps {
   stream: MediaStream | null;
   isGuideOpen: boolean;
   permissionMessage: string | null;
-  questionStatus: PrototypeQuestionStatus;
+  questionStatus: StudentQuestionStatus;
   questionEndedToast: string | null;
   autoExitReason: string | null;
+  isQuestionActionEnabled?: boolean;
   onOpenGuide: () => void;
   onCloseGuide: () => void;
   onRequestCameraAndEnter: () => Promise<void>;
@@ -96,12 +112,14 @@ export function StudentDashboard(props: StudentDashboardProps) {
                 카메라 다시 켜기
               </button>
             )}
-            {props.questionStatus === "NONE" && props.connectionStatus === "MAIN_ROOM" ? (
+            {props.isQuestionActionEnabled !== false &&
+            props.questionStatus === "NONE" &&
+            props.connectionStatus === "MAIN_ROOM" ? (
               <button className="button-secondary" onClick={props.onRequestQuestion}>
                 질문 요청하기
               </button>
             ) : null}
-            {props.questionStatus === "PENDING" ? (
+            {props.isQuestionActionEnabled !== false && props.questionStatus === "PENDING" ? (
               <button className="button-danger" onClick={props.onCancelQuestion}>
                 질문 요청 취소
               </button>
@@ -197,6 +215,10 @@ function formatConnectionStatus(status: StudentDashboardProps["connectionStatus"
       return "질문 대기";
     case "QUESTION_ROOM":
       return "1:1 질문방";
+    case "EXITED":
+      return "퇴실 완료";
+    case "DISCONNECTED":
+      return "연결 끊김";
     default:
       return "미입실";
   }

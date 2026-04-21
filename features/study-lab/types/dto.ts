@@ -56,6 +56,7 @@ export interface TeacherDashboardItemDto {
   todayStudySeconds: number;
   cameraStatus: StudyCameraStatus | null;
   questionStatus: QuestionRequestStatus | "NONE";
+  questionId: string | null;
   roomLabel: string | null;
 }
 
