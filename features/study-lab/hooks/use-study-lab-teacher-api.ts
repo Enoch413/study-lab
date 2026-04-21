@@ -16,7 +16,7 @@ import type { PrototypeConnectionStatus, PrototypeStudentState } from "../types/
 
 const TEACHER_DEV_AUTH: StudyLabDevAuthUser = {
   firebaseUid: "study-lab-dev-teacher",
-  name: "감독 선생님",
+  name: "담당 선생님",
   email: "teacher@study-lab.local",
   role: "admin",
   adminScope: "assigned",

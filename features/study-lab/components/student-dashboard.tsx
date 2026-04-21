@@ -49,114 +49,94 @@ interface StudentDashboardProps {
 export function StudentDashboard(props: StudentDashboardProps) {
   const roomLabel =
     props.connectionStatus === "QUESTION_ROOM" ? QUESTION_ROOM_LABEL : MAIN_STUDY_ROOM_LABEL;
+  const cameraTone = props.cameraStatus === "ON" ? "good" : "warn";
 
   return (
-    <section className="panel">
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
-        <div>
-          <h2>학생 화면</h2>
-          <p className="subtle">
-            {props.studentName} | {roomLabel}
-          </p>
+    <section className="panel student-panel">
+      <div className="panel-head">
+        <div className="panel-head-copy">
+          <div className="eyebrow">학생</div>
+          <h2 className="panel-title">{roomLabel}</h2>
+          <p className="subtle">{props.studentName}</p>
         </div>
-        <span className="pill" data-tone={props.cameraStatus === "ON" ? "good" : "warn"}>
-          카메라 {props.cameraStatus === "ON" ? "켜짐" : "꺼짐"}
+        <span className="pill" data-tone={cameraTone}>
+          {props.cameraStatus === "ON" ? "카메라 켜짐" : "카메라 꺼짐"}
         </span>
       </div>
 
-      <div className="metric-row">
-        <div className="metric-card">
-          현재 상태
-          <strong>{formatConnectionStatus(props.connectionStatus)}</strong>
-        </div>
-        <div className="metric-card">
-          오늘 공부 시간
-          <strong>{formatDuration(props.studySeconds)}</strong>
-        </div>
-        <div className="metric-card">
-          마이크 정책
-          <strong>{props.micPolicy === "OPEN" ? "질문방에서 켜짐" : "전체방에서 항상 꺼짐"}</strong>
-        </div>
+      <div className="metric-row metric-row-student">
+        <MetricCard label="상태" value={formatConnectionStatus(props.connectionStatus)} />
+        <MetricCard label="오늘" value={formatDuration(props.studySeconds)} />
+        <MetricCard label="질문" value={formatQuestionStatus(props.questionStatus)} />
       </div>
 
       <LiveVideoTile
-        title="내 영상"
-        subtitle="아직 입실 전입니다. 입실하면 이 영역에 카메라 화면이 표시됩니다."
+        title="카메라"
+        subtitle="카메라 미리보기"
         stream={props.stream}
         mirrored
-        tone={props.cameraStatus === "ON" ? "good" : "warn"}
-        statusText={props.cameraStatus === "ON" ? "카메라 송출 중" : "카메라 꺼짐"}
-        footerText={
-          props.connectionStatus === "QUESTION_ROOM"
-            ? "질문방에서는 영상이 유지되고 마이크가 자동으로 켜집니다."
-            : "전체 공부방에서는 카메라를 유지하고 마이크는 항상 꺼진 상태로 고정됩니다."
-        }
+        tone={cameraTone}
+        statusText={props.cameraStatus === "ON" ? "실시간" : "꺼짐"}
       />
 
-      <div className="button-row" style={{ marginTop: 16 }}>
-        {!props.isEntered ? (
-          <button className="button-primary" onClick={props.onOpenGuide}>
-            입실하기
+      {!props.isEntered ? (
+        <div className="button-row">
+          <button className="button-primary" onClick={props.onOpenGuide} type="button">
+            입장
           </button>
-        ) : (
-          <>
-            <button className="button-primary" onClick={props.onExit}>
-              퇴실하기
-            </button>
-            {props.cameraStatus === "ON" ? (
-              <button className="button-secondary" onClick={props.onTurnCameraOff}>
-                카메라 끄기
-              </button>
-            ) : (
-              <button className="button-primary" onClick={props.onTurnCameraOnAgain}>
-                카메라 다시 켜기
-              </button>
-            )}
-            {props.isQuestionActionEnabled !== false &&
-            props.questionStatus === "NONE" &&
-            props.connectionStatus === "MAIN_ROOM" ? (
-              <button className="button-secondary" onClick={props.onRequestQuestion}>
-                질문 요청하기
-              </button>
-            ) : null}
-            {props.isQuestionActionEnabled !== false && props.questionStatus === "PENDING" ? (
-              <button className="button-danger" onClick={props.onCancelQuestion}>
-                질문 요청 취소
-              </button>
-            ) : null}
-          </>
-        )}
-      </div>
-
-      {props.connectionStatus === "MAIN_ROOM" ? (
-        <div className="banner" data-tone="good">
-          전체 공부방에서는 마이크가 항상 꺼져 있으며, 카메라는 반드시 켜져 있어야 합니다.
         </div>
-      ) : null}
+      ) : (
+        <div className="button-row">
+          <button className="button-primary" onClick={props.onExit} type="button">
+            나가기
+          </button>
+          {props.cameraStatus === "ON" ? (
+            <button className="button-secondary" onClick={props.onTurnCameraOff} type="button">
+              카메라 끄기
+            </button>
+          ) : (
+            <button className="button-primary" onClick={props.onTurnCameraOnAgain} type="button">
+              카메라 켜기
+            </button>
+          )}
+          {props.isQuestionActionEnabled !== false &&
+          props.questionStatus === "NONE" &&
+          props.connectionStatus === "MAIN_ROOM" ? (
+            <button className="button-secondary" onClick={props.onRequestQuestion} type="button">
+              질문
+            </button>
+          ) : null}
+          {props.isQuestionActionEnabled !== false && props.questionStatus === "PENDING" ? (
+            <button className="button-danger" onClick={props.onCancelQuestion} type="button">
+              취소
+            </button>
+          ) : null}
+        </div>
+      )}
 
       {props.connectionStatus === "QUESTION_PENDING" ? (
         <div className="banner" data-tone="warn">
-          질문 요청이 접수되었습니다. 강사가 수락하면 1:1 질문방으로 자동 이동합니다.
+          강사 응답 대기 중입니다.
         </div>
       ) : null}
 
       {props.connectionStatus === "QUESTION_ROOM" ? (
         <div className="banner" data-tone="good">
-          현재 1:1 질문방에 있습니다. 영상은 유지되고 마이크가 켜집니다.
+          1:1 질문 중입니다.
         </div>
       ) : null}
 
       {props.cameraStatus === "OFF" && props.isEntered ? (
         <div className="banner" data-tone="danger">
-          카메라가 {formatDuration(props.cameraOffSeconds)} 동안 꺼져 있습니다. 10분이 지나면 자동 퇴실됩니다.
+          카메라가 {formatDuration(props.cameraOffSeconds)} 동안 꺼져 있습니다.
         </div>
       ) : null}
 
       {props.questionEndedToast ? (
         <div className="banner" data-tone="good">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+          <div className="banner-row">
             <span>{props.questionEndedToast}</span>
-            <button className="button-secondary" onClick={props.onDismissQuestionToast}>
+            <button className="button-secondary" onClick={props.onDismissQuestionToast} type="button">
               닫기
             </button>
           </div>
@@ -165,9 +145,9 @@ export function StudentDashboard(props: StudentDashboardProps) {
 
       {props.autoExitReason ? (
         <div className="banner" data-tone="danger">
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+          <div className="banner-row">
             <span>{props.autoExitReason}</span>
-            <button className="button-secondary" onClick={props.onClearAutoExitReason}>
+            <button className="button-secondary" onClick={props.onClearAutoExitReason} type="button">
               확인
             </button>
           </div>
@@ -177,27 +157,19 @@ export function StudentDashboard(props: StudentDashboardProps) {
       {props.isGuideOpen ? (
         <div className="modal-backdrop">
           <div className="modal-card">
-            <h3>입실 전 카메라 안내</h3>
-            <p className="subtle">
-              STUDY LAB은 입실 전에 카메라 허용이 반드시 필요합니다. 카메라를 거부하면 입실할 수 없습니다.
-            </p>
-            <ul>
-              <li>카메라를 허용해야만 입실할 수 있습니다.</li>
-              <li>강사와 관리자는 학생 영상을 CCTV처럼 확인합니다.</li>
-              <li>질문방으로 이동해도 영상은 유지되고 마이크는 켜집니다.</li>
-              <li>입실 후 카메라가 10분 이상 꺼져 있으면 자동 퇴실됩니다.</li>
-            </ul>
+            <div className="eyebrow">카메라</div>
+            <h3>카메라 권한이 필요합니다.</h3>
             {props.permissionMessage ? (
               <div className="banner" data-tone="danger">
                 {props.permissionMessage}
               </div>
             ) : null}
-            <div className="button-row" style={{ marginTop: 16 }}>
-              <button className="button-primary" onClick={props.onRequestCameraAndEnter}>
-                카메라 허용 후 입실
+            <div className="button-row">
+              <button className="button-primary" onClick={props.onRequestCameraAndEnter} type="button">
+                허용 후 입장
               </button>
-              <button className="button-secondary" onClick={props.onCloseGuide}>
-                취소
+              <button className="button-secondary" onClick={props.onCloseGuide} type="button">
+                닫기
               </button>
             </div>
           </div>
@@ -207,26 +179,62 @@ export function StudentDashboard(props: StudentDashboardProps) {
   );
 }
 
+function MetricCard(props: { label: string; value: string }) {
+  return (
+    <div className="metric-card">
+      <div className="metric-label">{props.label}</div>
+      <strong>{props.value}</strong>
+    </div>
+  );
+}
+
 function formatConnectionStatus(status: StudentDashboardProps["connectionStatus"]) {
   switch (status) {
     case "MAIN_ROOM":
-      return "전체 공부방";
+      return "메인룸";
     case "QUESTION_PENDING":
-      return "질문 대기";
+      return "대기";
     case "QUESTION_ROOM":
-      return "1:1 질문방";
+      return "1:1";
     case "EXITED":
-      return "퇴실 완료";
+      return "종료";
     case "DISCONNECTED":
-      return "연결 끊김";
+      return "오프라인";
     default:
-      return "미입실";
+      return "준비";
+  }
+}
+
+function formatQuestionStatus(status: StudentDashboardProps["questionStatus"]) {
+  switch (status) {
+    case "PENDING":
+      return "대기";
+    case "ACCEPTED":
+      return "진행";
+    case "COMPLETED":
+      return "완료";
+    case "CANCELED":
+      return "취소";
+    case "FAILED":
+      return "다시";
+    default:
+      return "없음";
   }
 }
 
 function formatDuration(totalSeconds: number) {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  return `${hours}시간 ${minutes}분 ${seconds}초`;
+  const safeSeconds = Math.max(0, totalSeconds);
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}시간 ${minutes}분`;
+  }
+
+  if (minutes > 0) {
+    return `${minutes}분`;
+  }
+
+  return `${seconds}초`;
 }

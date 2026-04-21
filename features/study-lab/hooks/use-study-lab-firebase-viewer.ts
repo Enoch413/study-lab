@@ -25,7 +25,7 @@ const DEFAULT_STATE: StudyLabFirebaseViewerState = {
   name: null,
   email: null,
   mappedRole: null,
-  message: "Firebase sign-in is required.",
+  message: "로그인이 필요합니다.",
 };
 
 const INITIAL_STATE: StudyLabFirebaseViewerState = {
@@ -51,7 +51,7 @@ export function useStudyLabFirebaseViewer(): StudyLabFirebaseViewerState {
           name: null,
           email: null,
           mappedRole: null,
-          message: "Checking CODE LAB authentication...",
+          message: "CODE LAB 로그인 확인 중입니다.",
         });
 
         await hydrateEmbeddedViewer(force === true, (nextState) => {
@@ -88,7 +88,7 @@ export function useStudyLabFirebaseViewer(): StudyLabFirebaseViewerState {
     if (!app) {
       setState({
         ...DEFAULT_STATE,
-        message: "Firebase configuration is missing.",
+        message: "Firebase 설정이 없습니다.",
       });
       return;
     }
@@ -160,7 +160,7 @@ async function hydrateFirebaseViewer(
       name: getFallbackUserName(user),
       email: user.email,
       mappedRole: null,
-      message: error instanceof Error ? error.message : "Failed to load Firebase viewer.",
+      message: error instanceof Error ? error.message : "사용자 정보를 불러오지 못했습니다.",
     });
   }
 }
@@ -179,7 +179,7 @@ async function hydrateEmbeddedViewer(
         name: embeddedAuth?.name ?? null,
         email: embeddedAuth?.email ?? null,
         mappedRole: null,
-        message: embeddedAuth?.error ?? "Could not read the CODE LAB Firebase session.",
+        message: embeddedAuth?.error ?? "CODE LAB 로그인 정보를 읽지 못했습니다.",
       });
       return;
     }
@@ -219,8 +219,7 @@ async function hydrateEmbeddedViewer(
       name: null,
       email: null,
       mappedRole: null,
-      message:
-        error instanceof Error ? error.message : "Failed to load embedded Firebase viewer.",
+      message: error instanceof Error ? error.message : "로그인 정보를 불러오지 못했습니다.",
     });
   }
 }
@@ -237,5 +236,5 @@ function getFallbackUserName(user: User): string {
     return email;
   }
 
-  return "Firebase user";
+  return "Firebase 사용자";
 }

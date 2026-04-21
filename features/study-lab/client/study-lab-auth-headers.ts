@@ -100,7 +100,7 @@ export async function requestEmbeddedCodeLabAuth(options?: {
 
   if (window.parent === window) {
     embeddedStudyLabAuthSnapshot = buildEmbeddedStudyLabAuthSnapshot({
-      error: "CODE LAB 부모 창을 찾지 못했습니다.",
+      error: "CODE LAB 창을 찾지 못했습니다.",
     });
     return embeddedStudyLabAuthSnapshot;
   }
@@ -126,11 +126,7 @@ export async function requestEmbeddedCodeLabAuth(options?: {
     };
 
     const handleMessage = (event: MessageEvent) => {
-      if (
-        expectedParentOrigin &&
-        event.origin &&
-        event.origin !== expectedParentOrigin
-      ) {
+      if (expectedParentOrigin && event.origin && event.origin !== expectedParentOrigin) {
         return;
       }
 
@@ -149,13 +145,13 @@ export async function requestEmbeddedCodeLabAuth(options?: {
           data.adminScope === "all" || data.adminScope === "assigned"
             ? data.adminScope
             : null,
-        error: data.ok === false ? data.error ?? "CODE LAB 인증 정보를 받지 못했습니다." : null,
+        error: data.ok === false ? data.error ?? "인증 정보를 받지 못했습니다." : null,
       });
     };
 
     const timeout = window.setTimeout(() => {
       resolveSnapshot({
-        error: "CODE LAB 인증 응답이 지연되고 있습니다.",
+        error: "인증 응답이 지연되고 있습니다.",
       });
     }, STUDY_LAB_EMBED_TIMEOUT_MS);
 
