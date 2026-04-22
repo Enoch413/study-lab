@@ -414,6 +414,24 @@ button {
   gap: 0;
 }
 
+.student-layout,
+.student-primary,
+.student-secondary,
+.student-notices {
+  display: grid;
+  gap: 16px;
+}
+
+.student-primary .video-shell,
+.student-secondary .button-row {
+  margin-top: 0;
+}
+
+.student-panel .video-shell video,
+.student-panel .video-image {
+  min-height: 0;
+}
+
 .search-input {
   width: 100%;
   min-height: 50px;
@@ -548,6 +566,39 @@ button {
   .modal-card {
     border-radius: 28px;
     padding: 24px;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 960px) {
+  .page-shell[data-view="student"] {
+    max-width: 960px;
+    padding: 14px 16px calc(18px + var(--safe-b));
+  }
+
+  .student-layout {
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.9fr);
+    align-items: start;
+  }
+
+  .student-primary .video-shell {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+  }
+
+  .student-secondary {
+    align-content: start;
+  }
+
+  .student-secondary .button-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .student-secondary .button-row > *:only-child {
+    grid-column: 1 / -1;
+  }
+
+  .student-notices .banner:first-child {
+    margin-top: 0;
   }
 }
 

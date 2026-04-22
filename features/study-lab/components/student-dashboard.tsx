@@ -70,122 +70,138 @@ export function StudentDashboard(props: StudentDashboardProps) {
         </span>
       </div>
 
-      <div className="metric-row metric-row-student">
-        <MetricCard label="상태" value={formatConnectionStatus(props.connectionStatus)} />
-        <MetricCard label="오늘" value={formatDuration(props.studySeconds)} />
-        <MetricCard label="질문" value={formatQuestionStatus(props.questionStatus)} />
+      <div className="student-layout">
+        <div className="student-primary">
+          <div className="metric-row metric-row-student">
+            <MetricCard label="상태" value={formatConnectionStatus(props.connectionStatus)} />
+            <MetricCard label="오늘" value={formatDuration(props.studySeconds)} />
+            <MetricCard label="질문" value={formatQuestionStatus(props.questionStatus)} />
+          </div>
+
+          <LiveVideoTile
+            title="카메라"
+            subtitle="카메라 미리보기"
+            stream={props.stream}
+            mirrored
+            tone={cameraTone}
+            statusText={props.cameraStatus === "ON" ? "실시간" : "꺼짐"}
+            footerText={footerText}
+          />
+        </div>
+
+        <div className="student-secondary">
+          {!props.isEntered ? (
+            <div className="button-row">
+              <button className="button-primary" onClick={props.onOpenGuide} type="button">
+                입장
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="button-row">
+                <button className="button-primary" onClick={props.onExit} type="button">
+                  나가기
+                </button>
+                {props.cameraStatus === "ON" ? (
+                  <button
+                    className="button-secondary"
+                    disabled={props.isCameraActionPending}
+                    onClick={props.onTurnCameraOff}
+                    type="button"
+                  >
+                    {props.isCameraActionPending ? "카메라 끄는 중" : "카메라 끄기"}
+                  </button>
+                ) : (
+                  <button
+                    className="button-primary"
+                    disabled={props.isCameraActionPending}
+                    onClick={props.onTurnCameraOnAgain}
+                    type="button"
+                  >
+                    {props.isCameraActionPending ? "카메라 켜는 중" : "카메라 켜기"}
+                  </button>
+                )}
+                {props.isQuestionActionEnabled !== false &&
+                props.questionStatus === "NONE" &&
+                props.connectionStatus === "MAIN_ROOM" ? (
+                  <button
+                    className="button-secondary"
+                    disabled={props.isQuestionSubmitting}
+                    onClick={props.onRequestQuestion}
+                    type="button"
+                  >
+                    {props.isQuestionSubmitting ? "질문 보내는 중" : "질문"}
+                  </button>
+                ) : null}
+                {props.isQuestionActionEnabled !== false && props.questionStatus === "PENDING" ? (
+                  <button
+                    className="button-danger"
+                    disabled={props.isQuestionCanceling}
+                    onClick={props.onCancelQuestion}
+                    type="button"
+                  >
+                    {props.isQuestionCanceling ? "질문 취소 중" : "취소"}
+                  </button>
+                ) : null}
+              </div>
+              <p className="subtle action-support-copy">
+                질문은 담당 선생님이 스터디 카페에 들어와 있을 때만 받을 수 있습니다. 응답이
+                없으면 담당 선생님께 먼저 연락해 주세요.
+              </p>
+            </>
+          )}
+
+          <div className="student-notices">
+            {props.connectionStatus === "QUESTION_PENDING" ? (
+              <div className="banner" data-tone="warn">
+                선생님 응답 대기 중입니다.
+              </div>
+            ) : null}
+
+            {props.connectionStatus === "QUESTION_ROOM" ? (
+              <div className="banner" data-tone="good">
+                1:1 질문 중입니다.
+              </div>
+            ) : null}
+
+            {props.cameraStatus === "OFF" && props.isEntered ? (
+              <div className="banner" data-tone="danger">
+                카메라가 {formatDuration(props.cameraOffSeconds)} 동안 꺼져 있습니다.
+              </div>
+            ) : null}
+
+            {props.questionEndedToast ? (
+              <div className="banner" data-tone="good">
+                <div className="banner-row">
+                  <span>{props.questionEndedToast}</span>
+                  <button
+                    className="button-secondary"
+                    onClick={props.onDismissQuestionToast}
+                    type="button"
+                  >
+                    닫기
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {props.autoExitReason ? (
+              <div className="banner" data-tone="danger">
+                <div className="banner-row">
+                  <span>{props.autoExitReason}</span>
+                  <button
+                    className="button-secondary"
+                    onClick={props.onClearAutoExitReason}
+                    type="button"
+                  >
+                    확인
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
       </div>
-
-      <LiveVideoTile
-        title="카메라"
-        subtitle="카메라 미리보기"
-        stream={props.stream}
-        mirrored
-        tone={cameraTone}
-        statusText={props.cameraStatus === "ON" ? "실시간" : "꺼짐"}
-        footerText={footerText}
-      />
-
-      {!props.isEntered ? (
-        <div className="button-row">
-          <button className="button-primary" onClick={props.onOpenGuide} type="button">
-            입장
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="button-row">
-            <button className="button-primary" onClick={props.onExit} type="button">
-              나가기
-            </button>
-            {props.cameraStatus === "ON" ? (
-              <button
-                className="button-secondary"
-                disabled={props.isCameraActionPending}
-                onClick={props.onTurnCameraOff}
-                type="button"
-              >
-                {props.isCameraActionPending ? "카메라 끄는 중" : "카메라 끄기"}
-              </button>
-            ) : (
-              <button
-                className="button-primary"
-                disabled={props.isCameraActionPending}
-                onClick={props.onTurnCameraOnAgain}
-                type="button"
-              >
-                {props.isCameraActionPending ? "카메라 켜는 중" : "카메라 켜기"}
-              </button>
-            )}
-            {props.isQuestionActionEnabled !== false &&
-            props.questionStatus === "NONE" &&
-            props.connectionStatus === "MAIN_ROOM" ? (
-              <button
-                className="button-secondary"
-                disabled={props.isQuestionSubmitting}
-                onClick={props.onRequestQuestion}
-                type="button"
-              >
-                {props.isQuestionSubmitting ? "질문 보내는 중" : "질문"}
-              </button>
-            ) : null}
-            {props.isQuestionActionEnabled !== false && props.questionStatus === "PENDING" ? (
-              <button
-                className="button-danger"
-                disabled={props.isQuestionCanceling}
-                onClick={props.onCancelQuestion}
-                type="button"
-              >
-                {props.isQuestionCanceling ? "질문 취소 중" : "취소"}
-              </button>
-            ) : null}
-          </div>
-          <p className="subtle action-support-copy">
-            질문은 담당 선생님이 스터디 카페에 들어와 있을 때만 받을 수 있습니다. 응답이
-            없으면 담당 선생님께 먼저 연락해 주세요.
-          </p>
-        </>
-      )}
-
-      {props.connectionStatus === "QUESTION_PENDING" ? (
-        <div className="banner" data-tone="warn">
-          선생님 응답 대기 중입니다.
-        </div>
-      ) : null}
-
-      {props.connectionStatus === "QUESTION_ROOM" ? (
-        <div className="banner" data-tone="good">
-          1:1 질문 중입니다.
-        </div>
-      ) : null}
-
-      {props.cameraStatus === "OFF" && props.isEntered ? (
-        <div className="banner" data-tone="danger">
-          카메라가 {formatDuration(props.cameraOffSeconds)} 동안 꺼져 있습니다.
-        </div>
-      ) : null}
-
-      {props.questionEndedToast ? (
-        <div className="banner" data-tone="good">
-          <div className="banner-row">
-            <span>{props.questionEndedToast}</span>
-            <button className="button-secondary" onClick={props.onDismissQuestionToast} type="button">
-              닫기
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {props.autoExitReason ? (
-        <div className="banner" data-tone="danger">
-          <div className="banner-row">
-            <span>{props.autoExitReason}</span>
-            <button className="button-secondary" onClick={props.onClearAutoExitReason} type="button">
-              확인
-            </button>
-          </div>
-        </div>
-      ) : null}
 
       {props.isGuideOpen ? (
         <div className="modal-backdrop">
