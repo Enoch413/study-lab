@@ -73,6 +73,8 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   const [isEntering, setIsEntering] = useState(false);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const latestRequestHeadersRef = useRef<Record<string, string>>({});
+  const detachedExitSentRef = useRef(false);
 
   const selectedStudent = useMemo(() => {
     return (
@@ -99,7 +101,9 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   }, [selectedStudent.email, selectedStudent.firebaseUid, selectedStudent.name]);
 
   const requestHeaders = useCallback(async () => {
-    return getStudyLabAuthHeaders(devAuthUser);
+    const headers = await getStudyLabAuthHeaders(devAuthUser);
+    latestRequestHeadersRef.current = headers;
+    return headers;
   }, [devAuthUser]);
 
   const jsonHeaders = useCallback(async () => {
@@ -206,6 +210,12 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   }, [isEntered, postHeartbeat, session?.id]);
 
   useEffect(() => {
+    if (!isEntered) {
+      detachedExitSentRef.current = false;
+    }
+  }, [isEntered]);
+
+  useEffect(() => {
     if (!isEnabled || !isStudyLabEmbeddedMode() || isStudyLabDetachedWindow()) {
       return;
     }
@@ -231,6 +241,37 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     window.addEventListener("message", handleDetachedExit);
     return () => window.removeEventListener("message", handleDetachedExit);
   }, [isEnabled, refreshDashboard]);
+
+  useEffect(() => {
+    if (!isEnabled || !isStudyLabDetachedWindow() || !isEntered || !session?.id) {
+      return;
+    }
+
+    const sessionId = session.id;
+    const handleDetachedWindowClose = () => {
+      if (detachedExitSentRef.current) {
+        return;
+      }
+
+      detachedExitSentRef.current = true;
+      notifyEmbeddedStudyLabDetachedExit();
+      stopStream();
+
+      void fetch(`/api/study-lab/sessions/${sessionId}/exit`, {
+        method: "POST",
+        headers: latestRequestHeadersRef.current,
+        keepalive: true,
+      });
+    };
+
+    window.addEventListener("pagehide", handleDetachedWindowClose);
+    window.addEventListener("beforeunload", handleDetachedWindowClose);
+
+    return () => {
+      window.removeEventListener("pagehide", handleDetachedWindowClose);
+      window.removeEventListener("beforeunload", handleDetachedWindowClose);
+    };
+  }, [isEnabled, isEntered, session?.id]);
 
   useEffect(() => {
     if (
@@ -509,6 +550,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     setCameraOffStartedAt(null);
 
     if (json.ok && isStudyLabDetachedWindow()) {
+      detachedExitSentRef.current = true;
       notifyEmbeddedStudyLabDetachedExit();
       window.close();
       window.setTimeout(() => window.close(), 80);
