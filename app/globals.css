@@ -304,6 +304,10 @@ button {
   margin-top: 16px;
 }
 
+.button-row > *:only-child {
+  grid-column: 1 / -1;
+}
+
 .button-primary,
 .button-secondary,
 .button-danger {
@@ -379,6 +383,22 @@ button {
   display: grid;
   gap: 10px;
   margin-top: 16px;
+}
+
+.teacher-panel .panel-head {
+  align-items: center;
+}
+
+.teacher-panel .panel-head-copy {
+  gap: 0;
+}
+
+.student-panel .panel-head {
+  align-items: center;
+}
+
+.student-panel .panel-head-copy {
+  gap: 0;
 }
 
 .search-input {

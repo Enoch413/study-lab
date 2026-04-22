@@ -55,9 +55,7 @@ export function StudentDashboard(props: StudentDashboardProps) {
     <section className="panel student-panel">
       <div className="panel-head">
         <div className="panel-head-copy">
-          <div className="eyebrow">학생</div>
           <h2 className="panel-title">{roomLabel}</h2>
-          <p className="subtle">{props.studentName}</p>
         </div>
         <span className="pill" data-tone={cameraTone}>
           {props.cameraStatus === "ON" ? "카메라 켜짐" : "카메라 꺼짐"}
