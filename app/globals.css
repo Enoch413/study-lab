@@ -486,6 +486,45 @@ button {
   aspect-ratio: 16 / 9;
 }
 
+.student-video-shell--landscape .student-video-pledge-shell {
+  inset: 50% 28px auto 28px;
+  transform: translateY(-50%);
+  justify-items: stretch;
+}
+
+.student-video-shell--landscape .student-video-pledge-display,
+.student-video-shell--landscape .student-video-pledge-form {
+  width: min(100%, 720px);
+  margin: 0 auto;
+}
+
+.student-video-shell--landscape .student-video-pledge-display {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px 16px;
+  text-align: left;
+}
+
+.student-video-shell--landscape .student-video-pledge-display strong {
+  margin-top: 0;
+  font-size: clamp(1.1rem, 2.6vw, 1.85rem);
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.student-video-shell--landscape .student-video-pledge-label {
+  align-self: center;
+}
+
+.student-video-shell--landscape .student-video-pledge-form {
+  gap: 10px;
+}
+
+.student-video-shell--landscape .student-video-pledge-input {
+  min-height: 88px;
+}
+
 .student-video-clock,
 .student-video-pledge-shell {
   pointer-events: auto;
@@ -843,6 +882,20 @@ button {
 
   .student-video-pledge-input {
     min-height: 96px;
+  }
+
+  .student-video-shell--landscape .student-video-pledge-shell {
+    inset: 50% 14px auto 14px;
+  }
+
+  .student-video-shell--landscape .student-video-pledge-display {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: 10px;
+  }
+
+  .student-video-shell--landscape .student-video-pledge-display strong {
+    font-size: clamp(1rem, 4vw, 1.25rem);
   }
 }
 
