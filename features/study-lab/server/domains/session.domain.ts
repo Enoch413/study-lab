@@ -12,7 +12,6 @@ import type { StudyRoomRepository } from "../repositories/study-room.repository"
 import type { StudySessionRepository } from "../repositories/study-session.repository";
 import { assertCameraStatusUpdatable } from "../policies/camera.policy";
 import {
-  assertCanCreateQuestionFromSession,
   assertSessionActiveForMutation,
   assertSessionMutable,
   assertSessionOwner,
@@ -129,10 +128,9 @@ export class SessionDomain {
     // Transaction boundary required:
     // 1. lock session row
     // 2. verify owner + ACTIVE
-    // 3. close open question if needed
-    // 4. set EXITED state
-    // 5. reconcile summaries
-    // 6. append audit log
+    // 3. set EXITED state
+    // 4. reconcile summaries
+    // 5. append audit log
     return this.deps.txRunner.runInTransaction(async (tx) => {
       const session = await this.deps.studySessionRepository.findByIdForUpdate(command.sessionId, tx);
 
@@ -279,10 +277,6 @@ export class SessionDomain {
     assertSessionOwner(session, userId);
     assertSessionMutable(session);
     return session;
-  }
-
-  assertCanCreateQuestionFromSession(session: StudySession): void {
-    assertCanCreateQuestionFromSession(session);
   }
 }
 

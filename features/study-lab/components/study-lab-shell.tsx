@@ -81,37 +81,27 @@ export function StudyLabShell() {
             stream={studentApi.stream}
             hasPreviewStream={studentApi.hasPreviewStream}
             permissionMessage={studentApi.permissionMessage}
-            questionStatus={studentApi.questionStatus}
-            questionEndedToast={studentApi.questionEndedToast}
             autoExitReason={studentApi.autoExitReason}
-            isQuestionActionEnabled={!studentApi.isQuestionSubmitting && !studentApi.isQuestionCanceling}
             isCameraActionPending={studentApi.isCameraUpdating}
             isPreparingCamera={studentApi.isPreparingCamera}
             isEntering={studentApi.isEntering}
-            isQuestionSubmitting={studentApi.isQuestionSubmitting}
-            isQuestionCanceling={studentApi.isQuestionCanceling}
             onPrepareCameraPreview={studentApi.requestCameraPreview}
             onStopCameraPreview={studentApi.stopPreviewCamera}
             onRequestCameraAndEnter={studentApi.requestCameraAndEnter}
             onExit={studentApi.exitStudyLab}
             onTurnCameraOff={studentApi.turnCameraOff}
             onTurnCameraOnAgain={studentApi.turnCameraOnAgain}
-            onRequestQuestion={studentApi.requestQuestion}
-            onCancelQuestion={studentApi.cancelQuestion}
-            onDismissQuestionToast={studentApi.dismissQuestionToast}
             onClearAutoExitReason={studentApi.clearAutoExitReason}
           />
         </section>
       ) : (
         <section className="board-grid">
           <TeacherDashboard
-            students={teacherApi.students}
+            items={teacherApi.items}
             selectedStudentId={teacherApi.selectedStudentId}
             getStudentStream={teacherApi.getStudentStream}
             getStudentPreview={teacherApi.getStudentPreview}
             onFocusStudent={teacherApi.setSelectedStudentId}
-            onAcceptQuestion={teacherApi.acceptQuestion}
-            onCompleteQuestion={teacherApi.completeQuestion}
           />
         </section>
       )}

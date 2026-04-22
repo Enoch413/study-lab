@@ -1,5 +1,4 @@
 import type {
-  QuestionRequestStatus,
   StudyCameraStatus,
   StudyConnectionStatus,
   StudyLabMappedRole,
@@ -21,16 +20,6 @@ export interface SessionSummaryDto {
   micPolicy: StudyMicPolicy;
 }
 
-export interface QuestionSummaryDto {
-  id: string;
-  status: QuestionRequestStatus;
-  requestedAt: string;
-  acceptedAt: string | null;
-  endedAt: string | null;
-  completeReason: string | null;
-  queuePosition?: number;
-}
-
 export interface StudyLabMeDto {
   user: {
     id: string;
@@ -38,7 +27,6 @@ export interface StudyLabMeDto {
     mappedRole: StudyLabMappedRole;
   };
   activeSession: (SessionSummaryDto & { todayStudySeconds: number }) | null;
-  activeQuestion: QuestionSummaryDto | null;
 }
 
 export interface ActiveStudentTileDto {
@@ -53,7 +41,6 @@ export interface StudentDashboardDto {
   todayStudySeconds: number;
   activeStudentCount: number;
   activeStudents: ActiveStudentTileDto[];
-  question: QuestionSummaryDto | null;
   recentSessions: SessionSummaryDto[];
 }
 
@@ -64,8 +51,6 @@ export interface TeacherDashboardItemDto {
   startedAt: string | null;
   todayStudySeconds: number;
   cameraStatus: StudyCameraStatus | null;
-  questionStatus: QuestionRequestStatus | "NONE";
-  questionId: string | null;
   roomLabel: string | null;
 }
 
@@ -79,18 +64,6 @@ export interface TeacherDashboardDto {
   serverNow: string;
 }
 
-export interface PendingQuestionDto {
-  id: string;
-  studentUserId: string;
-  studentName: string;
-  requestedAt: string;
-  queuePosition: number;
-}
-
-export interface PendingQuestionsDto {
-  items: PendingQuestionDto[];
-}
-
 export interface SessionEnterResultDto {
   reused: boolean;
   session: SessionSummaryDto;
@@ -100,33 +73,4 @@ export interface SessionExitResultDto {
   alreadyEnded: boolean;
   session: SessionSummaryDto;
   todayStudySeconds: number;
-}
-
-export interface QuestionAcceptResultDto {
-  question: {
-    id: string;
-    status: QuestionRequestStatus;
-    teacherUserId: string | null;
-    acceptedAt: string | null;
-    questionRoom: {
-      id: string;
-      roomLabel: string;
-    };
-  };
-  studentSession: Pick<SessionSummaryDto, "id" | "connectionStatus" | "micPolicy"> & {
-    currentRoomId: string;
-  };
-}
-
-export interface QuestionCompleteResultDto {
-  question: {
-    id: string;
-    status: QuestionRequestStatus;
-    completeReason: string | null;
-    endedAt: string | null;
-    autoReturnedAt: string | null;
-  };
-  studentSession: Pick<SessionSummaryDto, "id" | "connectionStatus" | "micPolicy"> & {
-    currentRoomId: string;
-  };
 }

@@ -84,15 +84,3 @@ export function assertConnectionStatusTransition(
     );
   }
 }
-
-export function assertCanCreateQuestionFromSession(session: StudySession): void {
-  assertSessionActiveForMutation(session);
-
-  if (session.connectionStatus !== "MAIN_ROOM") {
-    throw createStudyLabError(
-      STUDY_LAB_ERROR_CODES.SESSION_NOT_IN_MAIN_ROOM,
-      "Question requests can be created only from the main study room.",
-      { connectionStatus: session.connectionStatus },
-    );
-  }
-}

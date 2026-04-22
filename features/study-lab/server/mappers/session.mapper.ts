@@ -1,8 +1,6 @@
 import { MAIN_STUDY_ROOM_LABEL } from "../../constants/room-labels";
 import type { StudySession } from "../../types/domain";
 import type {
-  QuestionAcceptResultDto,
-  QuestionCompleteResultDto,
   SessionEnterResultDto,
   SessionExitResultDto,
   SessionSummaryDto,
@@ -47,59 +45,5 @@ export function toSessionExitResultDto(
     alreadyEnded,
     session: toSessionSummaryDto(session, roomLabel),
     todayStudySeconds,
-  };
-}
-
-export function toQuestionAcceptResultDto(args: {
-  questionId: string;
-  status: QuestionAcceptResultDto["question"]["status"];
-  teacherUserId: string | null;
-  acceptedAt: Date | null;
-  questionRoomId: string;
-  roomLabel: string;
-  studentSession: StudySession;
-}): QuestionAcceptResultDto {
-  return {
-    question: {
-      id: args.questionId,
-      status: args.status,
-      teacherUserId: args.teacherUserId,
-      acceptedAt: args.acceptedAt ? args.acceptedAt.toISOString() : null,
-      questionRoom: {
-        id: args.questionRoomId,
-        roomLabel: args.roomLabel,
-      },
-    },
-    studentSession: {
-      id: args.studentSession.id,
-      connectionStatus: args.studentSession.connectionStatus,
-      micPolicy: args.studentSession.micPolicy,
-      currentRoomId: args.studentSession.currentRoomId,
-    },
-  };
-}
-
-export function toQuestionCompleteResultDto(args: {
-  questionId: string;
-  status: QuestionCompleteResultDto["question"]["status"];
-  completeReason: string | null;
-  endedAt: Date | null;
-  autoReturnedAt: Date | null;
-  studentSession: StudySession;
-}): QuestionCompleteResultDto {
-  return {
-    question: {
-      id: args.questionId,
-      status: args.status,
-      completeReason: args.completeReason,
-      endedAt: args.endedAt ? args.endedAt.toISOString() : null,
-      autoReturnedAt: args.autoReturnedAt ? args.autoReturnedAt.toISOString() : null,
-    },
-    studentSession: {
-      id: args.studentSession.id,
-      connectionStatus: args.studentSession.connectionStatus,
-      micPolicy: args.studentSession.micPolicy,
-      currentRoomId: args.studentSession.currentRoomId,
-    },
   };
 }

@@ -1,12 +1,7 @@
 import { MAIN_STUDY_ROOM_LABEL } from "../../constants/room-labels";
-import type {
-  QuestionRequest,
-  StudyLabViewer,
-  StudySession,
-} from "../../types/domain";
+import type { StudyLabViewer, StudySession } from "../../types/domain";
 import type {
   ActiveStudentTileDto,
-  PendingQuestionDto,
   StudentDashboardDto,
   StudyLabMeDto,
   TeacherDashboardDto,
@@ -14,27 +9,10 @@ import type {
 } from "../../types/dto";
 import { toSessionSummaryDto } from "./session.mapper";
 
-function toQuestionSummary(question: QuestionRequest | null, queuePosition?: number) {
-  if (!question) {
-    return null;
-  }
-
-  return {
-    id: question.id,
-    status: question.status,
-    requestedAt: question.requestedAt.toISOString(),
-    acceptedAt: question.acceptedAt ? question.acceptedAt.toISOString() : null,
-    endedAt: question.endedAt ? question.endedAt.toISOString() : null,
-    completeReason: question.completeReason,
-    queuePosition,
-  };
-}
-
 export function toStudyLabMeDto(args: {
   viewer: StudyLabViewer;
   activeSession: StudySession | null;
   todayStudySeconds: number;
-  activeQuestion: QuestionRequest | null;
 }): StudyLabMeDto {
   return {
     user: {
@@ -48,7 +26,6 @@ export function toStudyLabMeDto(args: {
           todayStudySeconds: args.todayStudySeconds,
         }
       : null,
-    activeQuestion: toQuestionSummary(args.activeQuestion),
   };
 }
 
@@ -57,7 +34,6 @@ export function toStudentDashboardDto(args: {
   todayStudySeconds: number;
   activeStudentCount: number;
   activeStudents: ActiveStudentTileDto[];
-  question: QuestionRequest | null;
   recentSessions: StudySession[];
 }): StudentDashboardDto {
   return {
@@ -65,7 +41,6 @@ export function toStudentDashboardDto(args: {
     todayStudySeconds: args.todayStudySeconds,
     activeStudentCount: args.activeStudentCount,
     activeStudents: args.activeStudents,
-    question: toQuestionSummary(args.question),
     recentSessions: args.recentSessions.map((session) =>
       toSessionSummaryDto(session, MAIN_STUDY_ROOM_LABEL),
     ),
@@ -77,7 +52,6 @@ export function toTeacherDashboardItemDto(args: {
   studentName: string;
   session: StudySession | null;
   todayStudySeconds: number;
-  question: QuestionRequest | null;
   roomLabel?: string | null;
 }): TeacherDashboardItemDto {
   return {
@@ -87,8 +61,6 @@ export function toTeacherDashboardItemDto(args: {
     startedAt: args.session?.startedAt.toISOString() ?? null,
     todayStudySeconds: args.todayStudySeconds,
     cameraStatus: args.session?.cameraStatus ?? null,
-    questionStatus: args.question?.status ?? "NONE",
-    questionId: args.question?.id ?? null,
     roomLabel: args.roomLabel ?? (args.session ? MAIN_STUDY_ROOM_LABEL : null),
   };
 }
@@ -108,21 +80,5 @@ export function toTeacherDashboardDto(args: {
       total: args.total,
     },
     serverNow: args.serverNow.toISOString(),
-  };
-}
-
-export function toPendingQuestionDto(args: {
-  id: string;
-  studentUserId: string;
-  studentName: string;
-  requestedAt: Date;
-  queuePosition: number;
-}): PendingQuestionDto {
-  return {
-    id: args.id,
-    studentUserId: args.studentUserId,
-    studentName: args.studentName,
-    requestedAt: args.requestedAt.toISOString(),
-    queuePosition: args.queuePosition,
   };
 }

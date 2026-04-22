@@ -1,8 +1,4 @@
-import type { QuestionCompleteReason } from "./domain";
 import type {
-  PendingQuestionsDto,
-  QuestionAcceptResultDto,
-  QuestionCompleteResultDto,
   SessionEnterResultDto,
   SessionExitResultDto,
   StudentDashboardDto,
@@ -35,15 +31,6 @@ export interface CameraUpdateRequestBody {
   cameraStatus: "ON" | "OFF";
 }
 
-export interface CreateQuestionRequestBody {
-  studySessionId: string;
-  note?: string | null;
-}
-
-export interface CompleteQuestionRequestBody {
-  reason: QuestionCompleteReason;
-}
-
 export interface TeacherDashboardQuery {
   search?: string;
   onlyActive?: string;
@@ -56,6 +43,3 @@ export type SessionEnterApiResponse = ApiResponse<SessionEnterResultDto>;
 export type SessionExitApiResponse = ApiResponse<SessionExitResultDto>;
 export type StudentDashboardApiResponse = ApiResponse<StudentDashboardDto>;
 export type TeacherDashboardApiResponse = ApiResponse<TeacherDashboardDto>;
-export type PendingQuestionsApiResponse = ApiResponse<PendingQuestionsDto>;
-export type QuestionAcceptApiResponse = ApiResponse<QuestionAcceptResultDto>;
-export type QuestionCompleteApiResponse = ApiResponse<QuestionCompleteResultDto>;

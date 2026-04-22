@@ -8,11 +8,6 @@ const ALLOWED_ACTIONS = new Set<PrototypeAction>([
   "camera_on",
   "camera_off",
   "heartbeat",
-  "request_question",
-  "cancel_question",
-  "accept_question",
-  "complete_question",
-  "dismiss_question_toast",
   "clear_auto_exit_reason",
 ]);
 

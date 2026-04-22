@@ -9,20 +9,16 @@ import {
   getStudyLabAuthHeaders,
   type StudyLabDevAuthUser,
 } from "../client/study-lab-auth-headers";
+import type { StudentConnectionStatus } from "../components/student-dashboard";
 import type {
-  StudentConnectionStatus,
-  StudentQuestionStatus,
-} from "../components/student-dashboard";
-import type {
-  CameraUpdateRequestBody,
   ApiResponse,
+  CameraUpdateRequestBody,
   SessionEnterApiResponse,
   SessionExitApiResponse,
   StudentDashboardApiResponse,
 } from "../types/api";
 import type {
   ActiveStudentTileDto,
-  QuestionSummaryDto,
   SessionSummaryDto,
   StudentDashboardDto,
 } from "../types/dto";
@@ -61,7 +57,6 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   );
   const [dashboard, setDashboard] = useState<StudentDashboardDto | null>(null);
   const [permissionMessage, setPermissionMessage] = useState<string | null>(null);
-  const [questionEndedToast, setQuestionEndedToast] = useState<string | null>(null);
   const [autoExitReason, setAutoExitReason] = useState<string | null>(null);
   const [cameraOffStartedAt, setCameraOffStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(Date.now());
@@ -69,8 +64,6 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   const [isCameraUpdating, setIsCameraUpdating] = useState(false);
   const [isPreparingCamera, setIsPreparingCamera] = useState(false);
   const [isEntering, setIsEntering] = useState(false);
-  const [isQuestionSubmitting, setIsQuestionSubmitting] = useState(false);
-  const [isQuestionCanceling, setIsQuestionCanceling] = useState(false);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -84,9 +77,10 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   const session = dashboard?.session ?? null;
   const isEntered = session?.status === "ACTIVE";
   const cameraStatus = session?.cameraStatus ?? "OFF";
-  const connectionStatus: StudentConnectionStatus = isEntered ? session.connectionStatus : "IDLE";
+  const connectionStatus: StudentConnectionStatus = isEntered
+    ? session.connectionStatus
+    : "IDLE";
   const micPolicy = session?.micPolicy ?? "MUTED_LOCKED";
-  const questionStatus: StudentQuestionStatus = dashboard?.question?.status ?? "NONE";
 
   const devAuthUser = useMemo<StudyLabDevAuthUser>(() => {
     return {
@@ -122,7 +116,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     if (json.ok) {
       setDashboard(json.data);
     }
-  }, [requestHeaders]);
+  }, [isEnabled, requestHeaders]);
 
   const postHeartbeat = useCallback(
     async (sessionId: string) => {
@@ -235,28 +229,23 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     stopStream();
     setDashboard(null);
     setPermissionMessage(null);
-    setQuestionEndedToast(null);
     setAutoExitReason(null);
     setCameraOffStartedAt(null);
     setIsCameraUpdating(false);
     setIsPreparingCamera(false);
     setIsEntering(false);
-    setIsQuestionSubmitting(false);
-    setIsQuestionCanceling(false);
   }, [isEnabled]);
 
   useEffect(() => {
     stopStream();
     setDashboard(null);
     setPermissionMessage(null);
-    setQuestionEndedToast(null);
     setAutoExitReason(null);
     setCameraOffStartedAt(null);
     setIsCameraUpdating(false);
     setIsPreparingCamera(false);
     setIsEntering(false);
-    setIsQuestionSubmitting(false);
-    setIsQuestionCanceling(false);
+
     if (isEnabled) {
       void refreshDashboard();
     }
@@ -326,7 +315,6 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
         todayStudySeconds: current?.todayStudySeconds ?? 0,
         activeStudentCount: Math.max(current?.activeStudentCount ?? 0, 1),
         activeStudents: current?.activeStudents ?? [],
-        question: current?.question ?? null,
         recentSessions: current?.recentSessions ?? [],
       }));
       setCameraOffStartedAt(null);
@@ -336,7 +324,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       setPermissionMessage(
         error instanceof Error && error.message
           ? error.message
-          : "카메라를 허용해야 입실할 수 있습니다.",
+          : "카메라를 사용할 수 있어야 입장할 수 있습니다.",
       );
     } finally {
       setIsEntering(false);
@@ -344,11 +332,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   }
 
   async function turnCameraOff() {
-    if (!isEnabled || isCameraUpdating) {
-      return;
-    }
-
-    if (!session?.id) {
+    if (!isEnabled || isCameraUpdating || !session?.id) {
       return;
     }
 
@@ -362,11 +346,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   }
 
   async function turnCameraOnAgain() {
-    if (!isEnabled || isCameraUpdating) {
-      return;
-    }
-
-    if (!session?.id) {
+    if (!isEnabled || isCameraUpdating || !session?.id) {
       return;
     }
 
@@ -384,6 +364,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
         audio: false,
       });
       streamRef.current = stream;
+      setLocalStream(stream);
       await updateCamera(session.id, "ON");
     } catch {
       setPermissionMessage("카메라를 다시 켜려면 브라우저 권한을 허용해 주세요.");
@@ -409,7 +390,9 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       if (json.ok) {
         patchDashboard((current) => ({
           ...current,
-          session: current.session ? withSessionPatch(current.session, json.data.session) : json.data.session,
+          session: current.session
+            ? withSessionPatch(current.session, json.data.session)
+            : json.data.session,
         }));
         void refreshDashboard();
         return;
@@ -447,7 +430,6 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
         todayStudySeconds: json.data.todayStudySeconds,
         activeStudentCount: Math.max((current?.activeStudentCount ?? 1) - 1, 0),
         activeStudents: [],
-        question: null,
         recentSessions: current?.recentSessions ?? [],
       }));
     }
@@ -503,7 +485,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       setPermissionMessage(
         error instanceof Error && error.message
           ? error.message
-          : "카메라를 허용해야 입실할 수 있습니다.",
+          : "카메라를 사용할 수 있어야 입장할 수 있습니다.",
       );
       return false;
     }
@@ -518,7 +500,6 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     connectionStatus,
     cameraStatus,
     micPolicy,
-    questionStatus,
     studySeconds: dashboard?.todayStudySeconds ?? 0,
     activeStudentCount: dashboard?.activeStudentCount ?? 0,
     activeStudents: (dashboard?.activeStudents ?? []) as ActiveStudentTileDto[],
@@ -526,120 +507,23 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     stream: localStream,
     hasPreviewStream: !!localStream,
     permissionMessage,
-    questionEndedToast,
     autoExitReason,
     isCameraUpdating,
     isPreparingCamera,
     isEntering,
-    isQuestionSubmitting,
-    isQuestionCanceling,
     requestCameraPreview,
     stopPreviewCamera,
     requestCameraAndEnter,
     exitStudyLab: () => void exitStudyLab(),
     turnCameraOff: () => void turnCameraOff(),
     turnCameraOnAgain,
-    requestQuestion,
-    cancelQuestion,
-    dismissQuestionToast: () => setQuestionEndedToast(null),
     clearAutoExitReason: () => setAutoExitReason(null),
   };
-
-  async function requestQuestion() {
-    if (!isEnabled) {
-      return;
-    }
-
-    if (!session?.id || isQuestionSubmitting || isQuestionCanceling) {
-      return;
-    }
-
-    setIsQuestionSubmitting(true);
-
-    try {
-      const response = await fetch("/api/study-lab/questions", {
-        method: "POST",
-        headers: await jsonHeaders(),
-        body: JSON.stringify({ studySessionId: session.id }),
-      });
-      const json = (await response.json()) as ApiResponse<{
-        question: Pick<QuestionSummaryDto, "id" | "status" | "requestedAt">;
-      }>;
-
-      if (json.ok) {
-        patchDashboard((current) => ({
-          ...current,
-          session: current.session
-            ? {
-                ...current.session,
-                connectionStatus: "QUESTION_PENDING",
-              }
-            : current.session,
-          question: toPendingQuestionSummary(json.data.question),
-        }));
-        void refreshDashboard();
-      }
-    } finally {
-      setIsQuestionSubmitting(false);
-    }
-  }
-
-  async function cancelQuestion() {
-    if (!isEnabled) {
-      return;
-    }
-
-    if (!dashboard?.question?.id || isQuestionSubmitting || isQuestionCanceling) {
-      return;
-    }
-
-    setIsQuestionCanceling(true);
-
-    try {
-      const response = await fetch(`/api/study-lab/questions/${dashboard.question.id}/cancel`, {
-        method: "POST",
-        headers: await requestHeaders(),
-      });
-      const json = (await response.json()) as ApiResponse<{
-        question: Pick<QuestionSummaryDto, "id" | "status" | "endedAt">;
-      }>;
-
-      if (json.ok) {
-        patchDashboard((current) => ({
-          ...current,
-          session: current.session
-            ? {
-                ...current.session,
-                connectionStatus: "MAIN_ROOM",
-                micPolicy: "MUTED_LOCKED",
-              }
-            : current.session,
-          question: null,
-        }));
-        void refreshDashboard();
-      }
-    } finally {
-      setIsQuestionCanceling(false);
-    }
-  }
 }
 
 function withSessionPatch(previousSession: SessionSummaryDto, nextSession: SessionSummaryDto) {
   return {
     ...previousSession,
     ...nextSession,
-  };
-}
-
-function toPendingQuestionSummary(
-  question: Pick<QuestionSummaryDto, "id" | "status" | "requestedAt">,
-): QuestionSummaryDto {
-  return {
-    id: question.id,
-    status: question.status,
-    requestedAt: question.requestedAt,
-    acceptedAt: null,
-    endedAt: null,
-    completeReason: null,
   };
 }

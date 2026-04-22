@@ -7,14 +7,12 @@ import {
   toTeacherDashboardItemDto,
 } from "../mappers/dashboard.mapper";
 import type { DailyStudySummaryRepository } from "../repositories/daily-study-summary.repository";
-import type { QuestionRequestRepository } from "../repositories/question-request.repository";
 import type { StudySessionRepository } from "../repositories/study-session.repository";
 import type { UserRepository } from "../repositories/user.repository";
 
 export interface DashboardDomainDependencies {
   userRepository: UserRepository;
   studySessionRepository: StudySessionRepository;
-  questionRequestRepository: QuestionRequestRepository;
   dailyStudySummaryRepository: DailyStudySummaryRepository;
 }
 
@@ -24,7 +22,6 @@ export class DashboardDomain {
   async getStudyLabMe(viewer: StudyLabViewer): Promise<StudyLabMeDto> {
     const serverNow = new Date();
     const activeSession = await this.deps.studySessionRepository.findActiveByUserId(viewer.userId);
-    const activeQuestion = await this.deps.questionRequestRepository.findOpenByStudentUserId(viewer.userId);
     const todaySummary = await this.deps.dailyStudySummaryRepository.findByUserIdAndDate(
       viewer.userId,
       toKstDateString(serverNow),
@@ -33,7 +30,6 @@ export class DashboardDomain {
     return toStudyLabMeDto({
       viewer,
       activeSession,
-      activeQuestion,
       todayStudySeconds: calculateTodayStudySeconds({
         accumulatedSeconds: todaySummary?.accumulatedSeconds ?? 0,
         activeStartedAt: activeSession?.startedAt ?? null,
@@ -45,7 +41,6 @@ export class DashboardDomain {
   async getStudentDashboard(viewer: StudyLabViewer): Promise<StudentDashboardDto> {
     const serverNow = new Date();
     const session = await this.deps.studySessionRepository.findActiveByUserId(viewer.userId);
-    const question = await this.deps.questionRequestRepository.findOpenByStudentUserId(viewer.userId);
     const recentSessions = await this.deps.studySessionRepository.listRecentByUserId(viewer.userId, 10);
     const activeDashboardRows = await this.deps.studySessionRepository.listForTeacherDashboard({
       page: 1,
@@ -59,7 +54,6 @@ export class DashboardDomain {
 
     return toStudentDashboardDto({
       session,
-      question,
       recentSessions,
       todayStudySeconds: calculateTodayStudySeconds({
         accumulatedSeconds: todaySummary?.accumulatedSeconds ?? 0,
@@ -98,26 +92,20 @@ export class DashboardDomain {
     );
     const summaryByUserId = new Map(summaries.map((summary) => [summary.userId, summary]));
 
-    const items = await Promise.all(
-      dashboardRows.rows.map(async (row) => {
-        const question = await this.deps.questionRequestRepository.findOpenByStudentUserId(
-          row.session.userId,
-        );
-        const summary = summaryByUserId.get(row.session.userId);
+    const items = dashboardRows.rows.map((row) => {
+      const summary = summaryByUserId.get(row.session.userId);
 
-        return toTeacherDashboardItemDto({
-          studentUserId: row.session.userId,
-          studentName: row.studentName,
-          session: row.session,
-          question,
-          todayStudySeconds: calculateTodayStudySeconds({
-            accumulatedSeconds: summary?.accumulatedSeconds ?? 0,
-            activeStartedAt: row.session.startedAt,
-            serverNow,
-          }),
-        });
-      }),
-    );
+      return toTeacherDashboardItemDto({
+        studentUserId: row.session.userId,
+        studentName: row.studentName,
+        session: row.session,
+        todayStudySeconds: calculateTodayStudySeconds({
+          accumulatedSeconds: summary?.accumulatedSeconds ?? 0,
+          activeStartedAt: row.session.startedAt,
+          serverNow,
+        }),
+      });
+    });
 
     return toTeacherDashboardDto({
       items,
