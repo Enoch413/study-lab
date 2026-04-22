@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MAIN_STUDY_ROOM_LABEL, QUESTION_ROOM_LABEL } from "../constants/room-labels";
 import { LiveVideoTile } from "./live-video-tile";
 
@@ -50,7 +51,23 @@ interface StudentDashboardProps {
   onClearAutoExitReason: () => void;
 }
 
+type CameraDisplayMode = "portrait" | "landscape";
+
+const CAMERA_DISPLAY_MODE_STORAGE_PREFIX = "study-lab.student-camera-display";
+const DAILY_PLEDGE_STORAGE_PREFIX = "study-lab.student-daily-pledge";
+const DAILY_PLEDGE_MAX_LENGTH = 40;
+
 export function StudentDashboard(props: StudentDashboardProps) {
+  const preferenceKey = useMemo(() => {
+    const normalizedName = props.studentName.trim().toLowerCase();
+    return encodeURIComponent(normalizedName || "student");
+  }, [props.studentName]);
+  const displayModeStorageKey = `${CAMERA_DISPLAY_MODE_STORAGE_PREFIX}:${preferenceKey}`;
+  const pledgeStorageKey = `${DAILY_PLEDGE_STORAGE_PREFIX}:${preferenceKey}`;
+  const [displayMode, setDisplayMode] = useState<CameraDisplayMode>("portrait");
+  const [pledgeText, setPledgeText] = useState("");
+  const [isEditingPledge, setIsEditingPledge] = useState(false);
+  const pledgeInputRef = useRef<HTMLTextAreaElement | null>(null);
   const roomLabel =
     props.connectionStatus === "QUESTION_ROOM" ? QUESTION_ROOM_LABEL : MAIN_STUDY_ROOM_LABEL;
   const cameraTone = props.cameraStatus === "ON" ? "good" : "warn";
@@ -58,6 +75,43 @@ export function StudentDashboard(props: StudentDashboardProps) {
   const footerText = props.isEntered
     ? `함께 공부중인 학생: ${companionCount}명`
     : "카메라 미리보기";
+  const trimmedPledgeText = pledgeText.trim();
+  const formattedStudyClock = formatStudyClock(props.studySeconds);
+
+  useEffect(() => {
+    const savedDisplayMode = window.localStorage.getItem(displayModeStorageKey);
+    const savedPledgeText = window.localStorage.getItem(pledgeStorageKey);
+
+    setDisplayMode(savedDisplayMode === "landscape" ? "landscape" : "portrait");
+    setPledgeText(savedPledgeText ?? "");
+    setIsEditingPledge(false);
+  }, [displayModeStorageKey, pledgeStorageKey]);
+
+  useEffect(() => {
+    window.localStorage.setItem(displayModeStorageKey, displayMode);
+  }, [displayMode, displayModeStorageKey]);
+
+  useEffect(() => {
+    if (!trimmedPledgeText) {
+      window.localStorage.removeItem(pledgeStorageKey);
+      return;
+    }
+
+    window.localStorage.setItem(pledgeStorageKey, pledgeText);
+  }, [pledgeStorageKey, pledgeText, trimmedPledgeText]);
+
+  useEffect(() => {
+    if (!isEditingPledge) {
+      return;
+    }
+
+    pledgeInputRef.current?.focus();
+  }, [isEditingPledge]);
+
+  function handlePledgeSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsEditingPledge(false);
+  }
 
   return (
     <section className="panel student-panel">
@@ -85,7 +139,71 @@ export function StudentDashboard(props: StudentDashboardProps) {
             mirrored
             tone={cameraTone}
             statusText={props.cameraStatus === "ON" ? "실시간" : "꺼짐"}
+            className={`student-video-shell student-video-shell--${displayMode}`}
             footerText={footerText}
+            overlayContent={
+              <>
+                <div className="student-video-tools">
+                  <div className="student-video-segmented" role="group" aria-label="카메라 화면 전환">
+                    <button
+                      className="student-video-segment"
+                      data-active={displayMode === "portrait"}
+                      onClick={() => setDisplayMode("portrait")}
+                      type="button"
+                    >
+                      세로
+                    </button>
+                    <button
+                      className="student-video-segment"
+                      data-active={displayMode === "landscape"}
+                      onClick={() => setDisplayMode("landscape")}
+                      type="button"
+                    >
+                      가로
+                    </button>
+                  </div>
+                </div>
+
+                <div className="student-video-clock">{formattedStudyClock}</div>
+
+                <div className="student-video-pledge-shell">
+                  {isEditingPledge ? (
+                    <form className="student-video-pledge-form" onSubmit={handlePledgeSubmit}>
+                      <label className="student-video-pledge-label" htmlFor="student-daily-pledge">
+                        오늘의 각오
+                      </label>
+                      <textarea
+                        ref={pledgeInputRef}
+                        id="student-daily-pledge"
+                        className="student-video-pledge-input"
+                        rows={3}
+                        maxLength={DAILY_PLEDGE_MAX_LENGTH}
+                        placeholder="여기를 눌러서 오늘의 각오를 입력하세요"
+                        value={pledgeText}
+                        onChange={(event) => setPledgeText(event.target.value)}
+                      />
+                      <div className="student-video-pledge-actions">
+                        <span>{trimmedPledgeText.length}/{DAILY_PLEDGE_MAX_LENGTH}</span>
+                        <button className="student-video-action-button" type="submit">
+                          완료
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <button
+                      className="student-video-pledge-display"
+                      onClick={() => setIsEditingPledge(true)}
+                      type="button"
+                    >
+                      <span className="student-video-pledge-label">오늘의 각오</span>
+                      <strong data-empty={!trimmedPledgeText}>
+                        {trimmedPledgeText || "여기를 눌러서 오늘의 각오를 입력하세요"}
+                      </strong>
+                    </button>
+                  )}
+                </div>
+              </>
+            }
           />
         </div>
 
@@ -286,4 +404,13 @@ function formatDuration(totalSeconds: number) {
   }
 
   return `${seconds}초`;
+}
+
+function formatStudyClock(totalSeconds: number) {
+  const safeSeconds = Math.max(0, totalSeconds);
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+
+  return [hours, minutes, seconds].map((unit) => String(unit).padStart(2, "0")).join(":");
 }

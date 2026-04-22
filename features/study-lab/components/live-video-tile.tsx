@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 interface LiveVideoTileProps {
   title: string;
@@ -11,6 +11,8 @@ interface LiveVideoTileProps {
   tone?: "good" | "warn" | "danger";
   statusText: string;
   footerText?: string | null;
+  className?: string;
+  overlayContent?: ReactNode;
 }
 
 export function LiveVideoTile({
@@ -22,8 +24,11 @@ export function LiveVideoTile({
   tone = "good",
   statusText,
   footerText = null,
+  className = "",
+  overlayContent = null,
 }: LiveVideoTileProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const shellClassName = ["video-shell", className].filter(Boolean).join(" ");
 
   useEffect(() => {
     if (!videoRef.current) {
@@ -38,7 +43,7 @@ export function LiveVideoTile({
   }, [stream]);
 
   return (
-    <div className="video-shell">
+    <div className={shellClassName}>
       {stream ? (
         <video ref={videoRef} autoPlay muted playsInline style={{ transform: mirrored ? "scaleX(-1)" : "none" }} />
       ) : imageSrc ? (
@@ -49,16 +54,7 @@ export function LiveVideoTile({
           style={{ transform: mirrored ? "scaleX(-1)" : "none" }}
         />
       ) : (
-        <div
-          style={{
-            minHeight: 240,
-            display: "grid",
-            placeItems: "center",
-            color: "rgba(255,255,255,0.75)",
-            padding: 24,
-            textAlign: "center",
-          }}
-        >
+        <div className="video-placeholder">
           {subtitle}
         </div>
       )}
@@ -68,6 +64,7 @@ export function LiveVideoTile({
           {statusText}
         </span>
       </div>
+      {overlayContent ? <div className="video-custom-overlay">{overlayContent}</div> : null}
       {footerText ? <div className="video-footer">{footerText}</div> : null}
     </div>
   );
