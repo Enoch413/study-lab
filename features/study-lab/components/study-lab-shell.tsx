@@ -25,10 +25,6 @@ export function StudyLabShell() {
         ? "연결됨"
         : "로그인 필요";
   const bannerMessage = getVisibleBannerMessage(firebaseViewer.message);
-  const studentPrivacyMessage =
-    activeView === "student"
-      ? "카메라 화면은 현재 본인 확인용으로만 표시됩니다. 스터디 카페 안에서 다른 사용자에게 자동으로 공개되지 않으니 편하게 이용해 주세요."
-      : null;
   const statusBadges = (
     <>
       <span className="pill" data-tone={authTone}>
@@ -54,7 +50,12 @@ export function StudyLabShell() {
           <div className="hero-badges">{statusBadges}</div>
         )}
 
-        {studentPrivacyMessage ? <p className="subtle hero-support-copy">{studentPrivacyMessage}</p> : null}
+        {activeView === "student" ? (
+          <p className="subtle hero-support-copy">
+            카메라 화면은 <strong>본인 확인용</strong>으로만 표시됩니다. 스터디 카페 안에서 다른
+            사용자와 선생님에게 <strong>절대 공개되지 않으니</strong> 편하게 이용해주세요.
+          </p>
+        ) : null}
 
         {bannerMessage ? (
           <div className="banner" data-tone="danger">
@@ -81,6 +82,7 @@ export function StudyLabShell() {
             cameraStatus={studentApi.cameraStatus}
             micPolicy={studentApi.micPolicy}
             studySeconds={studentApi.studySeconds}
+            activeStudentCount={studentApi.activeStudentCount}
             cameraOffSeconds={studentApi.cameraOffSeconds}
             stream={studentApi.stream}
             isGuideOpen={studentApi.isGuideOpen}
@@ -153,7 +155,10 @@ function getVisibleBannerMessage(message: string | null): string | null {
     return null;
   }
 
-  if (normalizedMessage === "로그인이 필요합니다." || normalizedMessage === "CODE LAB 로그인 확인 중입니다.") {
+  if (
+    normalizedMessage === "로그인이 필요합니다." ||
+    normalizedMessage === "CODE LAB 로그인 확인 중입니다."
+  ) {
     return null;
   }
 

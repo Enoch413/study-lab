@@ -160,6 +160,11 @@ button {
   margin-top: -2px;
 }
 
+.hero-support-copy strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
 .board-grid {
   display: grid;
   gap: 16px;

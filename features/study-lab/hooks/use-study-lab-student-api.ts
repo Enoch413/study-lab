@@ -307,6 +307,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       setDashboard((current) => ({
         session: json.data.session,
         todayStudySeconds: current?.todayStudySeconds ?? 0,
+        activeStudentCount: Math.max(current?.activeStudentCount ?? 0, 1),
         question: current?.question ?? null,
         recentSessions: current?.recentSessions ?? [],
       }));
@@ -425,6 +426,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       setDashboard((current) => ({
         session: null,
         todayStudySeconds: json.data.todayStudySeconds,
+        activeStudentCount: Math.max((current?.activeStudentCount ?? 1) - 1, 0),
         question: null,
         recentSessions: current?.recentSessions ?? [],
       }));
@@ -457,6 +459,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     micPolicy,
     questionStatus,
     studySeconds: dashboard?.todayStudySeconds ?? 0,
+    activeStudentCount: dashboard?.activeStudentCount ?? 0,
     cameraOffSeconds,
     stream: streamRef.current,
     isGuideOpen,

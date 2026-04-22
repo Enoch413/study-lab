@@ -44,6 +44,7 @@ export interface StudyLabMeDto {
 export interface StudentDashboardDto {
   session: SessionSummaryDto | null;
   todayStudySeconds: number;
+  activeStudentCount: number;
   question: QuestionSummaryDto | null;
   recentSessions: SessionSummaryDto[];
 }

@@ -54,12 +54,14 @@ export function toStudyLabMeDto(args: {
 export function toStudentDashboardDto(args: {
   session: StudySession | null;
   todayStudySeconds: number;
+  activeStudentCount: number;
   question: QuestionRequest | null;
   recentSessions: StudySession[];
 }): StudentDashboardDto {
   return {
     session: args.session ? toSessionSummaryDto(args.session, MAIN_STUDY_ROOM_LABEL) : null,
     todayStudySeconds: args.todayStudySeconds,
+    activeStudentCount: args.activeStudentCount,
     question: toQuestionSummary(args.question),
     recentSessions: args.recentSessions.map((session) =>
       toSessionSummaryDto(session, MAIN_STUDY_ROOM_LABEL),

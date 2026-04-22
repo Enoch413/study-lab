@@ -26,6 +26,7 @@ interface StudentDashboardProps {
   cameraStatus: "ON" | "OFF";
   micPolicy: "MUTED_LOCKED" | "OPEN";
   studySeconds: number;
+  activeStudentCount: number;
   cameraOffSeconds: number;
   stream: MediaStream | null;
   isGuideOpen: boolean;
@@ -53,6 +54,10 @@ export function StudentDashboard(props: StudentDashboardProps) {
   const roomLabel =
     props.connectionStatus === "QUESTION_ROOM" ? QUESTION_ROOM_LABEL : MAIN_STUDY_ROOM_LABEL;
   const cameraTone = props.cameraStatus === "ON" ? "good" : "warn";
+  const companionCount = Math.max(props.activeStudentCount - 1, 0);
+  const footerText = props.isEntered
+    ? `함께 공부중인 학생: ${companionCount}명`
+    : "카메라 미리보기";
 
   return (
     <section className="panel student-panel">
@@ -78,6 +83,7 @@ export function StudentDashboard(props: StudentDashboardProps) {
         mirrored
         tone={cameraTone}
         statusText={props.cameraStatus === "ON" ? "실시간" : "꺼짐"}
+        footerText={footerText}
       />
 
       {!props.isEntered ? (
@@ -143,7 +149,7 @@ export function StudentDashboard(props: StudentDashboardProps) {
 
       {props.connectionStatus === "QUESTION_PENDING" ? (
         <div className="banner" data-tone="warn">
-          강사 응답 대기 중입니다.
+          선생님 응답 대기 중입니다.
         </div>
       ) : null}
 
