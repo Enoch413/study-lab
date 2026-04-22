@@ -56,6 +56,8 @@ export function toTeacherDashboardItemDto(args: {
   studentName: string;
   session: StudySession | null;
   todayStudySeconds: number;
+  snapshotImageSrc?: string | null;
+  snapshotCapturedAt?: string | null;
   roomLabel?: string | null;
 }): TeacherDashboardItemDto {
   return {
@@ -66,6 +68,8 @@ export function toTeacherDashboardItemDto(args: {
     todayStudySeconds: args.todayStudySeconds,
     cameraStatus: args.session?.cameraStatus ?? null,
     roomLabel: args.roomLabel ?? (args.session ? MAIN_STUDY_ROOM_LABEL : null),
+    snapshotImageSrc: args.snapshotImageSrc ?? null,
+    snapshotCapturedAt: args.snapshotCapturedAt ?? null,
   };
 }
 

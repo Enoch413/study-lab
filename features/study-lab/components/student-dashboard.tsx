@@ -455,18 +455,29 @@ function CompanionTile(props: {
   student: ActiveStudentTileDto;
   displayMode: CameraDisplayMode;
 }) {
+  const hasSnapshot = Boolean(props.student.snapshotImageSrc);
+
   return (
     <article className={`student-cctv-tile student-cctv-tile--${props.displayMode}`}>
       <div className={`student-cctv-screen student-cctv-screen--${props.displayMode}`}>
+        {props.student.snapshotImageSrc ? (
+          <img
+            alt=""
+            className="student-cctv-image"
+            src={props.student.snapshotImageSrc}
+          />
+        ) : null}
         <span
           className="student-cctv-badge"
           data-tone={props.student.cameraStatus === "ON" ? "good" : "warn"}
         >
           {props.student.cameraStatus === "ON" ? "카메라 켜짐" : "카메라 꺼짐"}
         </span>
-        <div className="student-cctv-center-copy">
-          {formatCompanionConnection(props.student.connectionStatus)}
-        </div>
+        {!hasSnapshot ? (
+          <div className="student-cctv-center-copy">
+            {formatCompanionConnection(props.student.connectionStatus)}
+          </div>
+        ) : null}
       </div>
       <div className="student-cctv-footer">
         <strong>{props.student.studentName}</strong>

@@ -81,6 +81,19 @@ export function useStudyLabTeacherApi(options?: { enabled?: boolean }) {
     selectedStudentId,
     setSelectedStudentId,
     getStudentStream: () => null,
-    getStudentPreview: () => null,
+    getStudentPreview: (studentId: string) => {
+      const item = items.find((dashboardItem) => dashboardItem.studentUserId === studentId);
+
+      if (!item?.snapshotImageSrc || !item.snapshotCapturedAt) {
+        return null;
+      }
+
+      const updatedAt = Date.parse(item.snapshotCapturedAt);
+
+      return {
+        imageSrc: item.snapshotImageSrc,
+        updatedAt: Number.isNaN(updatedAt) ? Date.now() : updatedAt,
+      };
+    },
   };
 }

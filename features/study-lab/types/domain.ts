@@ -68,6 +68,14 @@ export interface StudySession {
   updatedAt: Date;
 }
 
+export interface StudySessionSnapshot {
+  studySessionId: string;
+  studentUserId: string;
+  imageDataUrl: string;
+  capturedAt: Date;
+  updatedAt: Date;
+}
+
 export interface QuestionRequest {
   id: string;
   studySessionId: string;

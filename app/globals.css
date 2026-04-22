@@ -567,6 +567,16 @@ button {
   justify-content: flex-start;
 }
 
+.student-cctv-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .student-cctv-screen--landscape {
   min-height: 112px;
   padding: 12px;
@@ -607,6 +617,7 @@ button {
   color: #fff;
   font-size: 0.72rem;
   font-weight: 700;
+  z-index: 2;
 }
 
 .student-cctv-badge[data-tone="good"] {
@@ -618,6 +629,8 @@ button {
 }
 
 .student-cctv-center-copy {
+  position: relative;
+  z-index: 2;
   font-size: 0.86rem;
   font-weight: 600;
 }

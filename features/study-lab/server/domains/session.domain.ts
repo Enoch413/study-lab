@@ -10,6 +10,7 @@ import type {
 } from "../../types/domain";
 import type { StudyRoomRepository } from "../repositories/study-room.repository";
 import type { StudySessionRepository } from "../repositories/study-session.repository";
+import type { StudySessionSnapshotRepository } from "../repositories/study-session-snapshot.repository";
 import { assertCameraStatusUpdatable } from "../policies/camera.policy";
 import {
   assertSessionActiveForMutation,
@@ -19,7 +20,6 @@ import {
 } from "../policies/session.policy";
 import { STUDY_LAB_ERROR_CODES } from "../../constants/error-codes";
 import {
-  createNotImplementedStudyLabError,
   createStudyLabError,
 } from "../services/study-lab-error.service";
 import type { AuditLogDomain } from "./audit-log.domain";
@@ -28,6 +28,7 @@ import type { SummaryAggregationDomain } from "./summary-aggregation.domain";
 export interface SessionDomainDependencies {
   txRunner: StudyLabTransactionRunner;
   studySessionRepository: StudySessionRepository;
+  studySessionSnapshotRepository: StudySessionSnapshotRepository;
   studyRoomRepository: StudyRoomRepository;
   summaryAggregationDomain: SummaryAggregationDomain;
   auditLogDomain: AuditLogDomain;
@@ -164,6 +165,7 @@ export class SessionDomain {
         },
         tx,
       );
+      await this.deps.studySessionSnapshotRepository.deleteBySessionId(session.id, { tx });
 
       const appliedSummaries = await this.deps.summaryAggregationDomain.reconcileClosedSession(
         endedSession,
@@ -249,6 +251,10 @@ export class SessionDomain {
         tx,
       );
 
+      if (command.cameraStatus === "OFF") {
+        await this.deps.studySessionSnapshotRepository.deleteBySessionId(session.id, { tx });
+      }
+
       await this.deps.auditLogDomain.appendAuditLog(
         {
           entityType: "STUDY_SESSION",
@@ -271,7 +277,11 @@ export class SessionDomain {
     const session = await this.deps.studySessionRepository.findById(sessionId);
 
     if (!session) {
-      throw createNotImplementedStudyLabError("SessionDomain.getOwnedActiveSessionOrThrow missing SESSION_NOT_FOUND handling");
+      throw createStudyLabError(
+        STUDY_LAB_ERROR_CODES.SESSION_NOT_FOUND,
+        "The study session does not exist.",
+        { sessionId },
+      );
     }
 
     assertSessionOwner(session, userId);

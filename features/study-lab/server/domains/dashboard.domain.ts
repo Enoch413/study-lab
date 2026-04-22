@@ -1,4 +1,9 @@
-import type { StudyLabViewer, TeacherDashboardFilters } from "../../types/domain";
+import type {
+  StudyLabViewer,
+  StudySession,
+  StudySessionSnapshot,
+  TeacherDashboardFilters,
+} from "../../types/domain";
 import type { StudyLabMeDto, StudentDashboardDto, TeacherDashboardDto } from "../../types/dto";
 import {
   toStudyLabMeDto,
@@ -8,13 +13,17 @@ import {
 } from "../mappers/dashboard.mapper";
 import type { DailyStudySummaryRepository } from "../repositories/daily-study-summary.repository";
 import type { StudySessionRepository } from "../repositories/study-session.repository";
+import type { StudySessionSnapshotRepository } from "../repositories/study-session-snapshot.repository";
 import type { UserRepository } from "../repositories/user.repository";
 
 export interface DashboardDomainDependencies {
   userRepository: UserRepository;
   studySessionRepository: StudySessionRepository;
+  studySessionSnapshotRepository: StudySessionSnapshotRepository;
   dailyStudySummaryRepository: DailyStudySummaryRepository;
 }
+
+const SNAPSHOT_VISIBLE_WINDOW_MS = 35_000;
 
 export class DashboardDomain {
   constructor(private readonly deps: DashboardDomainDependencies) {}
@@ -54,6 +63,12 @@ export class DashboardDomain {
     const totalSummary = await this.deps.dailyStudySummaryRepository.findTotalsByUserId(
       viewer.userId,
     );
+    const snapshots = await this.deps.studySessionSnapshotRepository.findManyBySessionIds(
+      activeDashboardRows.rows.map((row) => row.session.id),
+    );
+    const snapshotBySessionId = new Map(
+      snapshots.map((snapshot) => [snapshot.studySessionId, snapshot]),
+    );
 
     return toStudentDashboardDto({
       session,
@@ -68,12 +83,22 @@ export class DashboardDomain {
       activeStudentCount: activeDashboardRows.total,
       activeStudents: activeDashboardRows.rows
         .filter((row) => row.session.userId !== viewer.userId)
-        .map((row) => ({
-          userId: row.session.userId,
-          studentName: row.studentName,
-          connectionStatus: row.session.connectionStatus,
-          cameraStatus: row.session.cameraStatus,
-        })),
+        .map((row) => {
+          const snapshot = resolveVisibleSnapshot(
+            row.session,
+            snapshotBySessionId.get(row.session.id) ?? null,
+            serverNow,
+          );
+
+          return {
+            userId: row.session.userId,
+            studentName: row.studentName,
+            connectionStatus: row.session.connectionStatus,
+            cameraStatus: row.session.cameraStatus,
+            snapshotImageSrc: snapshot?.imageDataUrl ?? null,
+            snapshotCapturedAt: snapshot?.capturedAt.toISOString() ?? null,
+          };
+        }),
     });
   }
 
@@ -91,14 +116,25 @@ export class DashboardDomain {
     const dashboardRows =
       await this.deps.studySessionRepository.listForTeacherDashboard(normalizedFilters);
     const studentUserIds = dashboardRows.rows.map((row) => row.session.userId);
+    const snapshots = await this.deps.studySessionSnapshotRepository.findManyBySessionIds(
+      dashboardRows.rows.map((row) => row.session.id),
+    );
     const summaries = await this.deps.dailyStudySummaryRepository.findManyByUserIdsAndDate(
       studentUserIds,
       toKstDateString(serverNow),
     );
     const summaryByUserId = new Map(summaries.map((summary) => [summary.userId, summary]));
+    const snapshotBySessionId = new Map(
+      snapshots.map((snapshot) => [snapshot.studySessionId, snapshot]),
+    );
 
     const items = dashboardRows.rows.map((row) => {
       const summary = summaryByUserId.get(row.session.userId);
+      const snapshot = resolveVisibleSnapshot(
+        row.session,
+        snapshotBySessionId.get(row.session.id) ?? null,
+        serverNow,
+      );
 
       return toTeacherDashboardItemDto({
         studentUserId: row.session.userId,
@@ -109,6 +145,8 @@ export class DashboardDomain {
           activeStartedAt: row.session.startedAt,
           serverNow,
         }),
+        snapshotImageSrc: snapshot?.imageDataUrl ?? null,
+        snapshotCapturedAt: snapshot?.capturedAt.toISOString() ?? null,
       });
     });
 
@@ -120,6 +158,22 @@ export class DashboardDomain {
       serverNow,
     });
   }
+}
+
+function resolveVisibleSnapshot(
+  session: StudySession,
+  snapshot: StudySessionSnapshot | null,
+  serverNow: Date,
+): StudySessionSnapshot | null {
+  if (session.cameraStatus !== "ON" || !snapshot) {
+    return null;
+  }
+
+  if (serverNow.getTime() - snapshot.capturedAt.getTime() > SNAPSHOT_VISIBLE_WINDOW_MS) {
+    return null;
+  }
+
+  return snapshot;
 }
 
 function calculateTodayStudySeconds(args: {

@@ -34,6 +34,8 @@ export interface ActiveStudentTileDto {
   studentName: string;
   connectionStatus: StudyConnectionStatus;
   cameraStatus: StudyCameraStatus;
+  snapshotImageSrc: string | null;
+  snapshotCapturedAt: string | null;
 }
 
 export interface StudentDashboardDto {
@@ -54,6 +56,8 @@ export interface TeacherDashboardItemDto {
   todayStudySeconds: number;
   cameraStatus: StudyCameraStatus | null;
   roomLabel: string | null;
+  snapshotImageSrc: string | null;
+  snapshotCapturedAt: string | null;
 }
 
 export interface TeacherDashboardDto {

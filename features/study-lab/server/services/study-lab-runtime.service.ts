@@ -8,6 +8,7 @@ import {
   PgDailyStudySummaryRepository,
   PgStudyRoomRepository,
   PgStudySessionRepository,
+  PgStudySessionSnapshotRepository,
   PgUserRepository,
 } from "../repositories/postgres-study-lab.repositories";
 import {
@@ -20,6 +21,7 @@ export function createStudyLabRuntime() {
   const userRepository = new PgUserRepository();
   const studyRoomRepository = new PgStudyRoomRepository();
   const studySessionRepository = new PgStudySessionRepository();
+  const studySessionSnapshotRepository = new PgStudySessionSnapshotRepository();
   const dailyStudySummaryRepository = new PgDailyStudySummaryRepository();
   const auditLogRepository = new PgAuditLogRepository();
   const auditLogDomain = new AuditLogDomain({ auditLogRepository });
@@ -34,11 +36,14 @@ export function createStudyLabRuntime() {
     dashboardDomain: new DashboardDomain({
       userRepository,
       studySessionRepository,
+      studySessionSnapshotRepository,
       dailyStudySummaryRepository,
     }),
+    studySessionSnapshotRepository,
     sessionDomain: new SessionDomain({
       txRunner,
       studySessionRepository,
+      studySessionSnapshotRepository,
       studyRoomRepository,
       summaryAggregationDomain,
       auditLogDomain,

@@ -56,6 +56,9 @@ export const STUDY_LAB_DEV_STUDENTS = [
 const SELECTED_DEV_STUDENT_KEY = "study-lab.real-api.selected-student";
 const CLIENT_INSTANCE_KEY = "study-lab.real-api.client-instance-id";
 const CAMERA_OFF_AUTO_EXIT_MS = 10 * 60 * 1000;
+const SNAPSHOT_CAPTURE_INTERVAL_MS = 10_000;
+const SNAPSHOT_CANVAS_WIDTH = 320;
+const SNAPSHOT_JPEG_QUALITY = 0.55;
 
 export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   const isEnabled = options?.enabled ?? true;
@@ -147,6 +150,24 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     [isEnabled, requestHeaders],
   );
 
+  const uploadSessionSnapshot = useCallback(
+    async (sessionId: string, imageDataUrl: string) => {
+      if (!isEnabled) {
+        return;
+      }
+
+      await fetch(`/api/study-lab/sessions/${sessionId}/snapshot`, {
+        method: "POST",
+        headers: await jsonHeaders(),
+        body: JSON.stringify({
+          imageDataUrl,
+          capturedAt: new Date().toISOString(),
+        }),
+      });
+    },
+    [isEnabled, jsonHeaders],
+  );
+
   useEffect(() => {
     const savedStudent = window.localStorage.getItem(SELECTED_DEV_STUDENT_KEY);
     const savedClientInstanceId = window.localStorage.getItem(CLIENT_INSTANCE_KEY);
@@ -208,6 +229,83 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
 
     return () => window.clearInterval(heartbeat);
   }, [isEntered, postHeartbeat, session?.id]);
+
+  useEffect(() => {
+    if (
+      !isEnabled ||
+      !isEntered ||
+      cameraStatus !== "ON" ||
+      !session?.id ||
+      !localStream
+    ) {
+      return;
+    }
+
+    const video = document.createElement("video");
+    const canvas = document.createElement("canvas");
+    let captureTimer: number | null = null;
+    let isDisposed = false;
+    let isUploading = false;
+
+    video.muted = true;
+    video.playsInline = true;
+    video.srcObject = localStream;
+
+    const captureAndUpload = async () => {
+      if (isDisposed || isUploading) {
+        return;
+      }
+
+      const imageDataUrl = captureSnapshotFromVideo(video, canvas);
+
+      if (!imageDataUrl) {
+        return;
+      }
+
+      isUploading = true;
+
+      try {
+        await uploadSessionSnapshot(session.id, imageDataUrl);
+      } catch {
+        // Snapshot upload is best-effort; dashboard polling will recover on the next frame.
+      } finally {
+        isUploading = false;
+      }
+    };
+
+    const startCapture = () => {
+      if (isDisposed || captureTimer) {
+        return;
+      }
+
+      void captureAndUpload();
+      captureTimer = window.setInterval(() => {
+        void captureAndUpload();
+      }, SNAPSHOT_CAPTURE_INTERVAL_MS);
+    };
+
+    video.addEventListener("loadedmetadata", startCapture, { once: true });
+    void video.play().then(startCapture).catch(() => undefined);
+
+    return () => {
+      isDisposed = true;
+
+      if (captureTimer) {
+        window.clearInterval(captureTimer);
+      }
+
+      video.removeEventListener("loadedmetadata", startCapture);
+      video.pause();
+      video.srcObject = null;
+    };
+  }, [
+    cameraStatus,
+    isEnabled,
+    isEntered,
+    localStream,
+    session?.id,
+    uploadSessionSnapshot,
+  ]);
 
   useEffect(() => {
     if (!isEntered) {
@@ -664,4 +762,29 @@ function withSessionPatch(previousSession: SessionSummaryDto, nextSession: Sessi
     ...previousSession,
     ...nextSession,
   };
+}
+
+function captureSnapshotFromVideo(
+  video: HTMLVideoElement,
+  canvas: HTMLCanvasElement,
+): string | null {
+  if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
+    return null;
+  }
+
+  const height = Math.max(
+    1,
+    Math.round((video.videoHeight / video.videoWidth) * SNAPSHOT_CANVAS_WIDTH),
+  );
+  canvas.width = SNAPSHOT_CANVAS_WIDTH;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return null;
+  }
+
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", SNAPSHOT_JPEG_QUALITY);
 }

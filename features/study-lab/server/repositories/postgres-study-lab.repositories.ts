@@ -13,6 +13,7 @@ import type {
   StudyRoomType,
   StudySession,
   StudySessionEndReason,
+  StudySessionSnapshot,
   StudySessionStatus,
 } from "../../types/domain";
 import type {
@@ -44,6 +45,11 @@ import type {
   TeacherDashboardSessionFilters,
   UpdateStudySessionPatch,
 } from "./study-session.repository";
+import type {
+  StudySessionSnapshotRepository,
+  UpsertStudySessionSnapshotInput,
+  StudySessionSnapshotLookupOptions,
+} from "./study-session-snapshot.repository";
 import type {
   UpsertFirebaseUserInput,
   UserLookupOptions,
@@ -79,6 +85,14 @@ interface StudySessionRow {
   end_reason: StudySessionEndReason | null;
   client_instance_id: string | null;
   created_at: Date | string;
+  updated_at: Date | string;
+}
+
+interface StudySessionSnapshotRow {
+  study_session_id: string;
+  student_user_id: string;
+  image_data_url: string;
+  captured_at: Date | string;
   updated_at: Date | string;
 }
 
@@ -465,6 +479,95 @@ export class PgStudySessionRepository implements StudySessionRepository {
   }
 }
 
+export class PgStudySessionSnapshotRepository implements StudySessionSnapshotRepository {
+  async upsert(
+    input: UpsertStudySessionSnapshotInput,
+    options: StudySessionSnapshotLookupOptions = {},
+  ): Promise<StudySessionSnapshot> {
+    const result = await pgQueryInContext<StudySessionSnapshotRow>(
+      options.tx,
+      `insert into study_session_snapshots (
+         study_session_id,
+         student_user_id,
+         image_data_url,
+         captured_at
+       )
+       values ($1, $2, $3, $4)
+       on conflict (study_session_id) do update
+       set
+         student_user_id = excluded.student_user_id,
+         image_data_url = excluded.image_data_url,
+         captured_at = excluded.captured_at,
+         updated_at = now()
+       returning *`,
+      [input.studySessionId, input.studentUserId, input.imageDataUrl, input.capturedAt],
+    );
+
+    return mapStudySessionSnapshot(result.rows[0]);
+  }
+
+  async findManyBySessionIds(
+    sessionIds: string[],
+    options: StudySessionSnapshotLookupOptions = {},
+  ): Promise<StudySessionSnapshot[]> {
+    if (sessionIds.length === 0) {
+      return [];
+    }
+
+    try {
+      const result = await pgQueryInContext<StudySessionSnapshotRow>(
+        options.tx,
+        `select *
+         from study_session_snapshots
+         where study_session_id = any($1::uuid[])`,
+        [sessionIds],
+      );
+
+      return result.rows.map(mapStudySessionSnapshot);
+    } catch (error) {
+      if (isUndefinedTableError(error)) {
+        return [];
+      }
+
+      throw error;
+    }
+  }
+
+  async deleteBySessionId(
+    studySessionId: string,
+    options: StudySessionSnapshotLookupOptions = {},
+  ): Promise<void> {
+    try {
+      await pgQueryInContext(
+        options.tx,
+        "delete from study_session_snapshots where study_session_id = $1",
+        [studySessionId],
+      );
+    } catch (error) {
+      if (!isUndefinedTableError(error)) {
+        throw error;
+      }
+    }
+  }
+
+  async deleteByStudentUserId(
+    studentUserId: string,
+    options: StudySessionSnapshotLookupOptions = {},
+  ): Promise<void> {
+    try {
+      await pgQueryInContext(
+        options.tx,
+        "delete from study_session_snapshots where student_user_id = $1",
+        [studentUserId],
+      );
+    } catch (error) {
+      if (!isUndefinedTableError(error)) {
+        throw error;
+      }
+    }
+  }
+}
+
 export class PgQuestionRequestRepository implements QuestionRequestRepository {
   async findById(
     questionId: string,
@@ -799,6 +902,16 @@ function mapStudySession(row: StudySessionRow): StudySession {
   };
 }
 
+function mapStudySessionSnapshot(row: StudySessionSnapshotRow): StudySessionSnapshot {
+  return {
+    studySessionId: row.study_session_id,
+    studentUserId: row.student_user_id,
+    imageDataUrl: row.image_data_url,
+    capturedAt: toDate(row.captured_at),
+    updatedAt: toDate(row.updated_at),
+  };
+}
+
 function mapQuestionRequest(row: QuestionRequestRow): QuestionRequest {
   return {
     id: row.id,
@@ -856,4 +969,13 @@ function toDateOnlyString(value: Date | string): string {
   }
 
   return value.toISOString().slice(0, 10);
+}
+
+function isUndefinedTableError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "42P01"
+  );
 }
