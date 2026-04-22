@@ -16,6 +16,9 @@ export function StudyLabShell() {
   const teacherApi = useStudyLabTeacherApi({ enabled: activeView === "teacher" });
 
   const viewerName = firebaseViewer.name ?? firebaseViewer.email ?? "로그인 대기";
+  const viewerMetaItems = [firebaseViewer.name, firebaseViewer.email].filter(
+    (value, index, items): value is string => Boolean(value) && items.indexOf(value) === index,
+  );
   const authTone = activeView ? "good" : firebaseViewer.status === "loading" ? "warn" : "danger";
   const authLabel =
     firebaseViewer.status === "loading"
@@ -23,17 +26,22 @@ export function StudyLabShell() {
       : activeView
         ? "연결됨"
         : "로그인 필요";
+  const bannerMessage = getVisibleBannerMessage(firebaseViewer.message);
 
   return (
     <main className="page-shell" data-view={activeView ?? "auth"}>
       <section className="hero-card">
-        <div className="hero-top">
-          <h1 className="hero-title">STUDY CAFE</h1>
-          <div className="hero-meta">
-            <span className="hero-meta-item">{viewerName}</span>
-            {firebaseViewer.email ? <span className="hero-meta-item">{firebaseViewer.email}</span> : null}
+        {viewerMetaItems.length > 0 ? (
+          <div className="hero-top">
+            <div className="hero-meta">
+              {viewerMetaItems.map((item) => (
+                <span key={item} className="hero-meta-item">
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <div className="hero-badges">
           <span className="pill" data-tone={authTone}>
@@ -44,9 +52,9 @@ export function StudyLabShell() {
           </span>
         </div>
 
-        {firebaseViewer.message ? (
+        {bannerMessage ? (
           <div className="banner" data-tone="danger">
-            {firebaseViewer.message}
+            {bannerMessage}
           </div>
         ) : null}
       </section>
@@ -129,4 +137,18 @@ function formatRoleLabel(role: StudyLabMappedRole | null): string {
     default:
       return "대기";
   }
+}
+
+function getVisibleBannerMessage(message: string | null): string | null {
+  const normalizedMessage = String(message ?? "").trim();
+
+  if (!normalizedMessage) {
+    return null;
+  }
+
+  if (normalizedMessage === "로그인이 필요합니다." || normalizedMessage === "CODE LAB 로그인 확인 중입니다.") {
+    return null;
+  }
+
+  return normalizedMessage;
 }
