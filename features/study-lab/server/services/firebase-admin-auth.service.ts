@@ -116,7 +116,7 @@ function getFirebaseAdminApp(): App {
 
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  const privateKey = normalizeEnvValue(process.env.FIREBASE_PRIVATE_KEY)?.replace(/\\n/g, "\n");
 
   if (!projectId || !clientEmail || !privateKey) {
     throw new Error(
@@ -134,6 +134,24 @@ function getFirebaseAdminApp(): App {
     },
     FIREBASE_APP_NAME,
   );
+}
+
+function normalizeEnvValue(value: string | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+
+  if (
+    trimmedValue.length >= 2 &&
+    ((trimmedValue.startsWith('"') && trimmedValue.endsWith('"')) ||
+      (trimmedValue.startsWith("'") && trimmedValue.endsWith("'")))
+  ) {
+    return trimmedValue.slice(1, -1);
+  }
+
+  return trimmedValue;
 }
 
 function mapDecodedToken(decodedToken: DecodedIdToken): VerifiedFirebaseUser {

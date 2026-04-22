@@ -5,7 +5,7 @@ let pool: Pool | null = null;
 export type PgQueryable = Pool | PoolClient;
 
 export function getPgPool(): Pool {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = normalizeEnvValue(process.env.DATABASE_URL);
 
   if (!connectionString) {
     throw new Error("DATABASE_URL is not configured.");
@@ -22,6 +22,24 @@ export function getPgPool(): Pool {
   }
 
   return pool;
+}
+
+function normalizeEnvValue(value: string | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const trimmedValue = value.trim();
+
+  if (
+    trimmedValue.length >= 2 &&
+    ((trimmedValue.startsWith('"') && trimmedValue.endsWith('"')) ||
+      (trimmedValue.startsWith("'") && trimmedValue.endsWith("'")))
+  ) {
+    return trimmedValue.slice(1, -1);
+  }
+
+  return trimmedValue;
 }
 
 export async function pgQuery<T extends QueryResultRow = QueryResultRow>(
