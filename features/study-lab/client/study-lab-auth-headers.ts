@@ -10,6 +10,7 @@ const STUDY_LAB_PARENT_ORIGIN_PARAM = "parentOrigin";
 const STUDY_LAB_DETACHED_PARAM = "detached";
 const STUDY_LAB_AUTH_REQUEST = "code-lab-study-auth-request";
 const STUDY_LAB_AUTH_RESPONSE = "code-lab-study-auth-response";
+const STUDY_LAB_DETACHED_EXIT = "code-lab-study-detached-exit";
 const STUDY_LAB_EMBED_TIMEOUT_MS = 4000;
 const STUDY_LAB_EMBED_CACHE_MS = 30_000;
 
@@ -46,6 +47,10 @@ interface EmbeddedStudyLabAuthResponseMessage {
   role?: "student" | "admin" | null;
   adminScope?: "assigned" | "all" | null;
   error?: string | null;
+}
+
+interface DetachedStudyLabExitMessage {
+  type: typeof STUDY_LAB_DETACHED_EXIT;
 }
 
 let embeddedStudyLabAuthSnapshot: EmbeddedStudyLabAuthSnapshot | null = null;
@@ -130,6 +135,33 @@ export function navigateDetachedStudyLabWindow(popup: Window | null): boolean {
   } catch {
     return false;
   }
+}
+
+export function notifyEmbeddedStudyLabDetachedExit(): void {
+  if (typeof window === "undefined" || !isStudyLabDetachedWindow()) {
+    return;
+  }
+
+  if (!window.opener || window.opener.closed) {
+    return;
+  }
+
+  const payload: DetachedStudyLabExitMessage = {
+    type: STUDY_LAB_DETACHED_EXIT,
+  };
+
+  window.opener.postMessage(payload, window.location.origin);
+}
+
+export function isDetachedStudyLabExitMessage(
+  value: unknown,
+): value is DetachedStudyLabExitMessage {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "type" in value &&
+    value.type === STUDY_LAB_DETACHED_EXIT
+  );
 }
 
 export function installEmbeddedCodeLabAuthRelay(): void {

@@ -7,9 +7,11 @@ import {
 } from "../constants/polling";
 import {
   getStudyLabAuthHeaders,
+  isDetachedStudyLabExitMessage,
   isStudyLabDetachedWindow,
   isStudyLabEmbeddedMode,
   navigateDetachedStudyLabWindow,
+  notifyEmbeddedStudyLabDetachedExit,
   openDetachedStudyLabWindowShell,
   type StudyLabDevAuthUser,
 } from "../client/study-lab-auth-headers";
@@ -201,6 +203,32 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
 
     return () => window.clearInterval(heartbeat);
   }, [isEntered, postHeartbeat, session?.id]);
+
+  useEffect(() => {
+    if (!isEnabled || !isStudyLabEmbeddedMode() || isStudyLabDetachedWindow()) {
+      return;
+    }
+
+    const handleDetachedExit = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if (!isDetachedStudyLabExitMessage(event.data)) {
+        return;
+      }
+
+      stopStream();
+      setCameraOffStartedAt(null);
+      setPermissionMessage(null);
+      setAutoExitReason(null);
+      setDashboard((current) => (current ? { ...current, session: null } : current));
+      void refreshDashboard();
+    };
+
+    window.addEventListener("message", handleDetachedExit);
+    return () => window.removeEventListener("message", handleDetachedExit);
+  }, [isEnabled, refreshDashboard]);
 
   useEffect(() => {
     if (
@@ -495,6 +523,11 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     }
 
     await refreshDashboard();
+
+    if (json.ok && isStudyLabDetachedWindow()) {
+      notifyEmbeddedStudyLabDetachedExit();
+      window.setTimeout(() => window.close(), 80);
+    }
   }
 
   function stopStream() {
