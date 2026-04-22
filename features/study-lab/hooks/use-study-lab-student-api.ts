@@ -6,6 +6,7 @@ import {
   STUDENT_DASHBOARD_POLLING_MS,
 } from "../constants/polling";
 import {
+  closeDetachedStudyLabWindowFromEmbed,
   getStudyLabAuthHeaders,
   isDetachedStudyLabExitMessage,
   isStudyLabDetachedWindow,
@@ -219,6 +220,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       }
 
       stopStream();
+      closeDetachedStudyLabWindowFromEmbed();
       setCameraOffStartedAt(null);
       setPermissionMessage(null);
       setAutoExitReason(null);
@@ -506,6 +508,14 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     stopStream();
     setCameraOffStartedAt(null);
 
+    if (json.ok && isStudyLabDetachedWindow()) {
+      notifyEmbeddedStudyLabDetachedExit();
+      window.close();
+      window.setTimeout(() => window.close(), 80);
+      window.setTimeout(() => window.close(), 300);
+      return;
+    }
+
     if (json.ok) {
       syncDashboard({
         session: null,
@@ -523,11 +533,6 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     }
 
     await refreshDashboard();
-
-    if (json.ok && isStudyLabDetachedWindow()) {
-      notifyEmbeddedStudyLabDetachedExit();
-      window.setTimeout(() => window.close(), 80);
-    }
   }
 
   function stopStream() {

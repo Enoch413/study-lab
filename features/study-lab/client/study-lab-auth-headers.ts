@@ -55,6 +55,7 @@ interface DetachedStudyLabExitMessage {
 
 let embeddedStudyLabAuthSnapshot: EmbeddedStudyLabAuthSnapshot | null = null;
 let embeddedStudyLabAuthRelayInstalled = false;
+let detachedStudyLabWindowRef: Window | null = null;
 
 export async function getStudyLabAuthHeaders(
   _fallbackUser: StudyLabDevAuthUser,
@@ -109,6 +110,8 @@ export function openDetachedStudyLabWindowShell(): Window | null {
     return null;
   }
 
+  detachedStudyLabWindowRef = popup;
+
   try {
     popup.document.title = "STUDY CAFE";
     popup.document.body.innerHTML =
@@ -153,6 +156,21 @@ export function notifyEmbeddedStudyLabDetachedExit(): void {
   window.opener.postMessage(payload, window.location.origin);
 }
 
+export function closeDetachedStudyLabWindowFromEmbed(): void {
+  if (!detachedStudyLabWindowRef || detachedStudyLabWindowRef.closed) {
+    detachedStudyLabWindowRef = null;
+    return;
+  }
+
+  try {
+    detachedStudyLabWindowRef.close();
+  } catch {
+    // The detached window also calls window.close(); this is an extra safety net.
+  }
+
+  detachedStudyLabWindowRef = null;
+}
+
 export function isDetachedStudyLabExitMessage(
   value: unknown,
 ): value is DetachedStudyLabExitMessage {
@@ -178,6 +196,11 @@ export function installEmbeddedCodeLabAuthRelay(): void {
 
   window.addEventListener("message", async (event) => {
     if (event.origin !== window.location.origin) {
+      return;
+    }
+
+    if (isDetachedStudyLabExitMessage(event.data)) {
+      closeDetachedStudyLabWindowFromEmbed();
       return;
     }
 
