@@ -1,6 +1,6 @@
 "use client";
 
-import { QUESTION_ROOM_LABEL, MAIN_STUDY_ROOM_LABEL } from "../constants/room-labels";
+import { MAIN_STUDY_ROOM_LABEL, QUESTION_ROOM_LABEL } from "../constants/room-labels";
 import { LiveVideoTile } from "./live-video-tile";
 
 export type StudentConnectionStatus =
@@ -34,6 +34,9 @@ interface StudentDashboardProps {
   questionEndedToast: string | null;
   autoExitReason: string | null;
   isQuestionActionEnabled?: boolean;
+  isCameraActionPending?: boolean;
+  isQuestionSubmitting?: boolean;
+  isQuestionCanceling?: boolean;
   onOpenGuide: () => void;
   onCloseGuide: () => void;
   onRequestCameraAndEnter: () => Promise<void>;
@@ -89,24 +92,44 @@ export function StudentDashboard(props: StudentDashboardProps) {
             나가기
           </button>
           {props.cameraStatus === "ON" ? (
-            <button className="button-secondary" onClick={props.onTurnCameraOff} type="button">
-              카메라 끄기
+            <button
+              className="button-secondary"
+              disabled={props.isCameraActionPending}
+              onClick={props.onTurnCameraOff}
+              type="button"
+            >
+              {props.isCameraActionPending ? "카메라 끄는 중" : "카메라 끄기"}
             </button>
           ) : (
-            <button className="button-primary" onClick={props.onTurnCameraOnAgain} type="button">
-              카메라 켜기
+            <button
+              className="button-primary"
+              disabled={props.isCameraActionPending}
+              onClick={props.onTurnCameraOnAgain}
+              type="button"
+            >
+              {props.isCameraActionPending ? "카메라 켜는 중" : "카메라 켜기"}
             </button>
           )}
           {props.isQuestionActionEnabled !== false &&
           props.questionStatus === "NONE" &&
           props.connectionStatus === "MAIN_ROOM" ? (
-            <button className="button-secondary" onClick={props.onRequestQuestion} type="button">
-              질문
+            <button
+              className="button-secondary"
+              disabled={props.isQuestionSubmitting}
+              onClick={props.onRequestQuestion}
+              type="button"
+            >
+              {props.isQuestionSubmitting ? "질문 보내는 중" : "질문"}
             </button>
           ) : null}
           {props.isQuestionActionEnabled !== false && props.questionStatus === "PENDING" ? (
-            <button className="button-danger" onClick={props.onCancelQuestion} type="button">
-              취소
+            <button
+              className="button-danger"
+              disabled={props.isQuestionCanceling}
+              onClick={props.onCancelQuestion}
+              type="button"
+            >
+              {props.isQuestionCanceling ? "질문 취소 중" : "취소"}
             </button>
           ) : null}
         </div>

@@ -82,7 +82,10 @@ export function StudyLabShell() {
             questionStatus={studentApi.questionStatus}
             questionEndedToast={studentApi.questionEndedToast}
             autoExitReason={studentApi.autoExitReason}
-            isQuestionActionEnabled
+            isQuestionActionEnabled={!studentApi.isQuestionSubmitting && !studentApi.isQuestionCanceling}
+            isCameraActionPending={studentApi.isCameraUpdating}
+            isQuestionSubmitting={studentApi.isQuestionSubmitting}
+            isQuestionCanceling={studentApi.isQuestionCanceling}
             onOpenGuide={studentApi.openGuide}
             onCloseGuide={studentApi.closeGuide}
             onRequestCameraAndEnter={studentApi.requestCameraAndEnter}

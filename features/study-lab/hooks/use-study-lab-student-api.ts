@@ -20,7 +20,11 @@ import type {
   SessionExitApiResponse,
   StudentDashboardApiResponse,
 } from "../types/api";
-import type { StudentDashboardDto } from "../types/dto";
+import type {
+  QuestionSummaryDto,
+  SessionSummaryDto,
+  StudentDashboardDto,
+} from "../types/dto";
 
 export const STUDY_LAB_DEV_STUDENTS = [
   {
@@ -62,6 +66,9 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   const [cameraOffStartedAt, setCameraOffStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(Date.now());
   const [clientInstanceId, setClientInstanceId] = useState<string | null>(null);
+  const [isCameraUpdating, setIsCameraUpdating] = useState(false);
+  const [isQuestionSubmitting, setIsQuestionSubmitting] = useState(false);
+  const [isQuestionCanceling, setIsQuestionCanceling] = useState(false);
   const streamRef = useRef<MediaStream | null>(null);
 
   const selectedStudent = useMemo(() => {
@@ -228,6 +235,9 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     setQuestionEndedToast(null);
     setAutoExitReason(null);
     setCameraOffStartedAt(null);
+    setIsCameraUpdating(false);
+    setIsQuestionSubmitting(false);
+    setIsQuestionCanceling(false);
   }, [isEnabled]);
 
   useEffect(() => {
@@ -237,6 +247,9 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     setQuestionEndedToast(null);
     setAutoExitReason(null);
     setCameraOffStartedAt(null);
+    setIsCameraUpdating(false);
+    setIsQuestionSubmitting(false);
+    setIsQuestionCanceling(false);
     if (isEnabled) {
       void refreshDashboard();
     }
@@ -249,6 +262,13 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
 
     return Math.max(0, Math.floor((now - cameraOffStartedAt) / 1000));
   }, [cameraOffStartedAt, cameraStatus, isEntered, now]);
+
+  const patchDashboard = useCallback(
+    (updater: (current: StudentDashboardDto) => StudentDashboardDto) => {
+      setDashboard((current) => (current ? updater(current) : current));
+    },
+    [],
+  );
 
   async function requestCameraAndEnter() {
     if (!isEnabled) {
@@ -304,7 +324,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   }
 
   async function turnCameraOff() {
-    if (!isEnabled) {
+    if (!isEnabled || isCameraUpdating) {
       return;
     }
 
@@ -322,7 +342,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   }
 
   async function turnCameraOnAgain() {
-    if (!isEnabled) {
+    if (!isEnabled || isCameraUpdating) {
       return;
     }
 
@@ -355,15 +375,29 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       return;
     }
 
-    const body: CameraUpdateRequestBody = { cameraStatus: nextCameraStatus };
-    const response = await fetch(`/api/study-lab/sessions/${sessionId}/camera`, {
-      method: "POST",
-      headers: await jsonHeaders(),
-      body: JSON.stringify(body),
-    });
+    setIsCameraUpdating(true);
 
-    if (response.ok) {
-      await refreshDashboard();
+    try {
+      const body: CameraUpdateRequestBody = { cameraStatus: nextCameraStatus };
+      const response = await fetch(`/api/study-lab/sessions/${sessionId}/camera`, {
+        method: "POST",
+        headers: await jsonHeaders(),
+        body: JSON.stringify(body),
+      });
+      const json = (await response.json()) as ApiResponse<{ session: SessionSummaryDto }>;
+
+      if (json.ok) {
+        patchDashboard((current) => ({
+          ...current,
+          session: current.session ? withSessionPatch(current.session, json.data.session) : json.data.session,
+        }));
+        void refreshDashboard();
+        return;
+      }
+
+      void refreshDashboard();
+    } finally {
+      setIsCameraUpdating(false);
     }
   }
 
@@ -429,6 +463,9 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     permissionMessage,
     questionEndedToast,
     autoExitReason,
+    isCameraUpdating,
+    isQuestionSubmitting,
+    isQuestionCanceling,
     openGuide: () => {
       setPermissionMessage(null);
       setIsGuideOpen(true);
@@ -449,19 +486,37 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       return;
     }
 
-    if (!session?.id) {
+    if (!session?.id || isQuestionSubmitting || isQuestionCanceling) {
       return;
     }
 
-    const response = await fetch("/api/study-lab/questions", {
-      method: "POST",
-      headers: await jsonHeaders(),
-      body: JSON.stringify({ studySessionId: session.id }),
-    });
-    const json = (await response.json()) as ApiResponse<unknown>;
+    setIsQuestionSubmitting(true);
 
-    if (json.ok) {
-      await refreshDashboard();
+    try {
+      const response = await fetch("/api/study-lab/questions", {
+        method: "POST",
+        headers: await jsonHeaders(),
+        body: JSON.stringify({ studySessionId: session.id }),
+      });
+      const json = (await response.json()) as ApiResponse<{
+        question: Pick<QuestionSummaryDto, "id" | "status" | "requestedAt">;
+      }>;
+
+      if (json.ok) {
+        patchDashboard((current) => ({
+          ...current,
+          session: current.session
+            ? {
+                ...current.session,
+                connectionStatus: "QUESTION_PENDING",
+              }
+            : current.session,
+          question: toPendingQuestionSummary(json.data.question),
+        }));
+        void refreshDashboard();
+      }
+    } finally {
+      setIsQuestionSubmitting(false);
     }
   }
 
@@ -470,18 +525,57 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       return;
     }
 
-    if (!dashboard?.question?.id) {
+    if (!dashboard?.question?.id || isQuestionSubmitting || isQuestionCanceling) {
       return;
     }
 
-    const response = await fetch(`/api/study-lab/questions/${dashboard.question.id}/cancel`, {
-      method: "POST",
-      headers: await requestHeaders(),
-    });
-    const json = (await response.json()) as ApiResponse<unknown>;
+    setIsQuestionCanceling(true);
 
-    if (json.ok) {
-      await refreshDashboard();
+    try {
+      const response = await fetch(`/api/study-lab/questions/${dashboard.question.id}/cancel`, {
+        method: "POST",
+        headers: await requestHeaders(),
+      });
+      const json = (await response.json()) as ApiResponse<{
+        question: Pick<QuestionSummaryDto, "id" | "status" | "endedAt">;
+      }>;
+
+      if (json.ok) {
+        patchDashboard((current) => ({
+          ...current,
+          session: current.session
+            ? {
+                ...current.session,
+                connectionStatus: "MAIN_ROOM",
+                micPolicy: "MUTED_LOCKED",
+              }
+            : current.session,
+          question: null,
+        }));
+        void refreshDashboard();
+      }
+    } finally {
+      setIsQuestionCanceling(false);
     }
   }
+}
+
+function withSessionPatch(previousSession: SessionSummaryDto, nextSession: SessionSummaryDto) {
+  return {
+    ...previousSession,
+    ...nextSession,
+  };
+}
+
+function toPendingQuestionSummary(
+  question: Pick<QuestionSummaryDto, "id" | "status" | "requestedAt">,
+): QuestionSummaryDto {
+  return {
+    id: question.id,
+    status: question.status,
+    requestedAt: question.requestedAt,
+    acceptedAt: null,
+    endedAt: null,
+    completeReason: null,
+  };
 }
