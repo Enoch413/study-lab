@@ -20,6 +20,8 @@ interface StudentDashboardProps {
   cameraStatus: "ON" | "OFF";
   micPolicy: "MUTED_LOCKED" | "OPEN";
   studySeconds: number;
+  totalStudyDays: number;
+  totalStudySeconds: number;
   activeStudentCount: number;
   activeStudents: ActiveStudentTileDto[];
   cameraOffSeconds: number;
@@ -167,8 +169,10 @@ export function StudentDashboard(props: StudentDashboardProps) {
     title: string;
     tone: "good" | "warn" | "danger";
     statusText: string;
-    footerText: string;
+    footerText?: string | null;
   }) {
+    const hasFooter = Boolean(config.footerText);
+
     if (displayMode === "landscape") {
       return (
         <div className="student-video-landscape-ui">
@@ -179,8 +183,16 @@ export function StudentDashboard(props: StudentDashboardProps) {
             </span>
           </div>
           <div className="student-video-landscape-center">{renderPledgeCard()}</div>
-          <div className="student-video-landscape-bottom">
-            <div className="student-video-landscape-footer">{config.footerText}</div>
+          <div
+            className={
+              hasFooter
+                ? "student-video-landscape-bottom"
+                : "student-video-landscape-bottom student-video-landscape-bottom--clock-only"
+            }
+          >
+            {hasFooter ? (
+              <div className="student-video-landscape-footer">{config.footerText}</div>
+            ) : null}
             <div className="student-video-landscape-clock">{formattedStudyClock}</div>
           </div>
         </div>
@@ -200,7 +212,7 @@ export function StudentDashboard(props: StudentDashboardProps) {
     subtitle: string;
     tone: "good" | "warn" | "danger";
     statusText: string;
-    footerText: string;
+    footerText?: string | null;
   }) {
     return (
       <LiveVideoTile
@@ -211,7 +223,7 @@ export function StudentDashboard(props: StudentDashboardProps) {
         tone={config.tone}
         statusText={config.statusText}
         className={`student-video-shell student-video-shell--${displayMode}`}
-        footerText={config.footerText}
+        footerText={config.footerText ?? null}
         overlayContent={renderCameraOverlay(config)}
         hideDefaultChrome={displayMode === "landscape"}
       />
@@ -225,11 +237,6 @@ export function StudentDashboard(props: StudentDashboardProps) {
           <h2 className="panel-title">
             {props.isEntered ? roomLabel : "메인룸 입장 준비"}
           </h2>
-          {props.isEntered ? (
-            <p className="subtle">
-              내 화면을 확인하면서 함께 공부 중인 학생 화면도 볼 수 있습니다.
-            </p>
-          ) : null}
         </div>
         <span className="pill" data-tone={headerTone}>
           {headerLabel}
@@ -265,8 +272,18 @@ export function StudentDashboard(props: StudentDashboardProps) {
               subtitle: "",
               tone: props.hasPreviewStream ? "good" : "warn",
               statusText: props.hasPreviewStream ? "미리보기" : "대기",
-              footerText: "",
             })}
+          </div>
+
+          <div className="student-prep-stats">
+            <article className="metric-card">
+              <span className="metric-label">총 공부일수</span>
+              <strong>{formatStudyDays(props.totalStudyDays)}</strong>
+            </article>
+            <article className="metric-card">
+              <span className="metric-label">총 공부시간</span>
+              <strong>{formatDuration(props.totalStudySeconds)}</strong>
+            </article>
           </div>
 
           <div className="student-control-row">
@@ -350,7 +367,6 @@ export function StudentDashboard(props: StudentDashboardProps) {
                   subtitle: "",
                   tone: cameraTone,
                   statusText: props.cameraStatus === "ON" ? "실시간" : "꺼짐",
-                  footerText: `함께 공부 중 ${Math.max(props.activeStudentCount, 1)}명`,
                 })}
               </div>
             </div>
@@ -485,6 +501,10 @@ function formatDuration(totalSeconds: number) {
   }
 
   return `${seconds}초`;
+}
+
+function formatStudyDays(totalDays: number) {
+  return `${Math.max(0, totalDays)}일`;
 }
 
 function formatStudyClock(totalSeconds: number) {

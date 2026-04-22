@@ -51,6 +51,9 @@ export class DashboardDomain {
       viewer.userId,
       toKstDateString(serverNow),
     );
+    const totalSummary = await this.deps.dailyStudySummaryRepository.findTotalsByUserId(
+      viewer.userId,
+    );
 
     return toStudentDashboardDto({
       session,
@@ -60,6 +63,8 @@ export class DashboardDomain {
         activeStartedAt: session?.startedAt ?? null,
         serverNow,
       }),
+      totalStudyDays: totalSummary.totalStudyDays,
+      totalStudySeconds: totalSummary.totalStudySeconds,
       activeStudentCount: activeDashboardRows.total,
       activeStudents: activeDashboardRows.rows
         .filter((row) => row.session.userId !== viewer.userId)

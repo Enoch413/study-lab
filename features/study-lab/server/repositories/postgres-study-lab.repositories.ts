@@ -655,6 +655,30 @@ export class PgDailyStudySummaryRepository implements DailyStudySummaryRepositor
     return result.rows.map(mapDailyStudySummary);
   }
 
+  async findTotalsByUserId(
+    userId: string,
+    options: DailyStudySummaryLookupOptions = {},
+  ): Promise<{ totalStudyDays: number; totalStudySeconds: number }> {
+    const result = await pgQueryInContext<{
+      total_study_days: number;
+      total_study_seconds: number | string;
+    }>(
+      options.tx,
+      `select
+         count(*) filter (where accumulated_seconds > 0)::int as total_study_days,
+         coalesce(sum(accumulated_seconds), 0)::bigint as total_study_seconds
+       from daily_study_summaries
+       where user_id = $1`,
+      [userId],
+    );
+    const row = result.rows[0];
+
+    return {
+      totalStudyDays: Number(row?.total_study_days ?? 0),
+      totalStudySeconds: Number(row?.total_study_seconds ?? 0),
+    };
+  }
+
   async upsert(
     input: UpsertDailyStudySummaryInput,
     tx: StudyLabTransaction,

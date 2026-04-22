@@ -32,6 +32,8 @@ export function toStudyLabMeDto(args: {
 export function toStudentDashboardDto(args: {
   session: StudySession | null;
   todayStudySeconds: number;
+  totalStudyDays: number;
+  totalStudySeconds: number;
   activeStudentCount: number;
   activeStudents: ActiveStudentTileDto[];
   recentSessions: StudySession[];
@@ -39,6 +41,8 @@ export function toStudentDashboardDto(args: {
   return {
     session: args.session ? toSessionSummaryDto(args.session, MAIN_STUDY_ROOM_LABEL) : null,
     todayStudySeconds: args.todayStudySeconds,
+    totalStudyDays: args.totalStudyDays,
+    totalStudySeconds: args.totalStudySeconds,
     activeStudentCount: args.activeStudentCount,
     activeStudents: args.activeStudents,
     recentSessions: args.recentSessions.map((session) =>

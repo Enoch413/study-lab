@@ -11,6 +11,11 @@ export interface UpsertDailyStudySummaryInput {
   lastReconciledAt: Date;
 }
 
+export interface DailyStudySummaryTotals {
+  totalStudyDays: number;
+  totalStudySeconds: number;
+}
+
 export interface DailyStudySummaryRepository {
   findByUserIdAndDate(
     userId: string,
@@ -22,6 +27,10 @@ export interface DailyStudySummaryRepository {
     summaryDateKst: string,
     options?: DailyStudySummaryLookupOptions,
   ): Promise<DailyStudySummary[]>;
+  findTotalsByUserId(
+    userId: string,
+    options?: DailyStudySummaryLookupOptions,
+  ): Promise<DailyStudySummaryTotals>;
 
   // Use inside transaction when session completion and summary reconciliation must commit together.
   upsert(input: UpsertDailyStudySummaryInput, tx: StudyLabTransaction): Promise<DailyStudySummary>;

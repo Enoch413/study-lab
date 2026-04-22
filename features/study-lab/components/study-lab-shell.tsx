@@ -75,6 +75,8 @@ export function StudyLabShell() {
             cameraStatus={studentApi.cameraStatus}
             micPolicy={studentApi.micPolicy}
             studySeconds={studentApi.studySeconds}
+            totalStudyDays={studentApi.totalStudyDays}
+            totalStudySeconds={studentApi.totalStudySeconds}
             activeStudentCount={studentApi.activeStudentCount}
             activeStudents={studentApi.activeStudents}
             cameraOffSeconds={studentApi.cameraOffSeconds}

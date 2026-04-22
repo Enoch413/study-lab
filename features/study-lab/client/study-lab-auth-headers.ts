@@ -83,6 +83,22 @@ export function isStudyLabEmbeddedMode(): boolean {
   return getStudyLabWindowSearchParams().get(STUDY_LAB_EMBED_PARAM) === STUDY_LAB_EMBED_VALUE;
 }
 
+function getCodeLabAuthHostWindow(): Window | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  if (window.opener && !window.opener.closed) {
+    return window.opener;
+  }
+
+  if (window.parent && window.parent !== window) {
+    return window.parent;
+  }
+
+  return null;
+}
+
 export async function requestEmbeddedCodeLabAuth(options?: {
   force?: boolean;
 }): Promise<EmbeddedStudyLabAuthSnapshot | null> {
@@ -98,7 +114,9 @@ export async function requestEmbeddedCodeLabAuth(options?: {
     return embeddedStudyLabAuthSnapshot;
   }
 
-  if (window.parent === window) {
+  const authHostWindow = getCodeLabAuthHostWindow();
+
+  if (!authHostWindow) {
     embeddedStudyLabAuthSnapshot = buildEmbeddedStudyLabAuthSnapshot({
       error: "CODE LAB 창을 찾지 못했습니다.",
     });
@@ -162,7 +180,7 @@ export async function requestEmbeddedCodeLabAuth(options?: {
       requestId,
     };
 
-    window.parent.postMessage(payload, expectedParentOrigin ?? "*");
+    authHostWindow.postMessage(payload, expectedParentOrigin ?? "*");
   });
 }
 

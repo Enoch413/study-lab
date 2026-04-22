@@ -39,6 +39,8 @@ export interface ActiveStudentTileDto {
 export interface StudentDashboardDto {
   session: SessionSummaryDto | null;
   todayStudySeconds: number;
+  totalStudyDays: number;
+  totalStudySeconds: number;
   activeStudentCount: number;
   activeStudents: ActiveStudentTileDto[];
   recentSessions: SessionSummaryDto[];

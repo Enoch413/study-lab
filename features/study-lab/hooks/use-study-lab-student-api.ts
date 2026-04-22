@@ -56,7 +56,6 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     STUDY_LAB_DEV_STUDENTS[0].firebaseUid,
   );
   const [dashboard, setDashboard] = useState<StudentDashboardDto | null>(null);
-  const [dashboardSyncedAt, setDashboardSyncedAt] = useState<number>(Date.now());
   const [permissionMessage, setPermissionMessage] = useState<string | null>(null);
   const [autoExitReason, setAutoExitReason] = useState<string | null>(null);
   const [cameraOffStartedAt, setCameraOffStartedAt] = useState<number | null>(null);
@@ -105,7 +104,6 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
 
   const syncDashboard = useCallback((nextDashboard: StudentDashboardDto | null) => {
     setDashboard(nextDashboard);
-    setDashboardSyncedAt(Date.now());
   }, []);
 
   const refreshDashboard = useCallback(async () => {
@@ -240,7 +238,6 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     setIsCameraUpdating(false);
     setIsPreparingCamera(false);
     setIsEntering(false);
-    setDashboardSyncedAt(Date.now());
   }, [isEnabled]);
 
   useEffect(() => {
@@ -252,7 +249,6 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     setIsCameraUpdating(false);
     setIsPreparingCamera(false);
     setIsEntering(false);
-    setDashboardSyncedAt(Date.now());
 
     if (isEnabled) {
       void refreshDashboard();
@@ -268,19 +264,22 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   }, [cameraOffStartedAt, cameraStatus, isEntered, now]);
 
   const studySeconds = useMemo(() => {
-    const baseStudySeconds = dashboard?.todayStudySeconds ?? 0;
-
-    if (!isEntered) {
-      return baseStudySeconds;
+    if (!isEntered || !session?.startedAt) {
+      return 0;
     }
 
-    return baseStudySeconds + Math.max(0, Math.floor((now - dashboardSyncedAt) / 1000));
-  }, [dashboard?.todayStudySeconds, dashboardSyncedAt, isEntered, now]);
+    const sessionStartedAt = Date.parse(session.startedAt);
+
+    if (Number.isNaN(sessionStartedAt)) {
+      return 0;
+    }
+
+    return Math.max(0, Math.floor((now - sessionStartedAt) / 1000));
+  }, [isEntered, now, session?.startedAt]);
 
   const patchDashboard = useCallback(
     (updater: (current: StudentDashboardDto) => StudentDashboardDto) => {
       setDashboard((current) => (current ? updater(current) : current));
-      setDashboardSyncedAt(Date.now());
     },
     [],
   );
@@ -332,6 +331,8 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       syncDashboard({
         session: json.data.session,
         todayStudySeconds: dashboard?.todayStudySeconds ?? 0,
+        totalStudyDays: dashboard?.totalStudyDays ?? 0,
+        totalStudySeconds: dashboard?.totalStudySeconds ?? 0,
         activeStudentCount: Math.max(dashboard?.activeStudentCount ?? 0, 1),
         activeStudents: dashboard?.activeStudents ?? [],
         recentSessions: dashboard?.recentSessions ?? [],
@@ -447,6 +448,8 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       syncDashboard({
         session: null,
         todayStudySeconds: json.data.todayStudySeconds,
+        totalStudyDays: dashboard?.totalStudyDays ?? 0,
+        totalStudySeconds: dashboard?.totalStudySeconds ?? 0,
         activeStudentCount: Math.max((dashboard?.activeStudentCount ?? 1) - 1, 0),
         activeStudents: [],
         recentSessions: dashboard?.recentSessions ?? [],
@@ -520,6 +523,8 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     cameraStatus,
     micPolicy,
     studySeconds,
+    totalStudyDays: dashboard?.totalStudyDays ?? 0,
+    totalStudySeconds: dashboard?.totalStudySeconds ?? 0,
     activeStudentCount: dashboard?.activeStudentCount ?? 0,
     activeStudents: (dashboard?.activeStudents ?? []) as ActiveStudentTileDto[],
     cameraOffSeconds,
