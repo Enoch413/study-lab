@@ -444,10 +444,6 @@ button {
   align-items: start;
 }
 
-.student-panel[data-display-mode="landscape"] {
-  overflow-x: auto;
-}
-
 .student-panel .video-shell video,
 .student-panel .video-image,
 .student-panel .video-placeholder {
@@ -509,39 +505,9 @@ button {
   gap: 16px;
 }
 
-.student-panel[data-display-mode="landscape"] .student-room-shell {
-  width: max(100%, 560px);
-  grid-template-columns: minmax(0, 340px) minmax(180px, 1fr);
-  grid-template-areas:
-    "main controls"
-    "main notices"
-    "main cctv";
-  gap: 16px;
-}
-
-.student-panel[data-display-mode="landscape"] .student-room-shell > .student-control-row {
-  grid-area: controls;
-}
-
-.student-panel[data-display-mode="landscape"] .student-room-shell > .student-notices {
-  grid-area: notices;
-}
-
-.student-panel[data-display-mode="landscape"] .student-room-shell > .student-room-main {
-  grid-area: main;
-}
-
-.student-panel[data-display-mode="landscape"] .student-room-shell > .student-cctv-section {
-  grid-area: cctv;
-}
-
 .student-control-row {
   display: grid;
   gap: 10px;
-}
-
-.student-panel[data-display-mode="landscape"] .student-control-row--room {
-  grid-template-columns: 1fr;
 }
 
 .student-control-row > *:only-child {
@@ -579,7 +545,7 @@ button {
 }
 
 .student-cctv-grid--landscape {
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -602,10 +568,19 @@ button {
 }
 
 .student-cctv-screen--landscape {
-  min-height: 96px;
-  padding: 14px 16px;
-  align-items: center;
-  justify-content: flex-end;
+  min-height: 112px;
+  padding: 12px;
+  display: grid;
+  place-items: center;
+}
+
+.student-cctv-screen--landscape .student-cctv-badge {
+  position: static;
+  transform: rotate(90deg);
+}
+
+.student-cctv-screen--landscape .student-cctv-center-copy {
+  transform: rotate(90deg);
 }
 
 .student-cctv-screen--summary {
@@ -828,30 +803,8 @@ button {
     grid-area: notices;
   }
 
-  .student-panel[data-display-mode="landscape"] .student-room-shell {
-    width: 100%;
-    grid-template-columns: minmax(0, 340px) minmax(280px, 1fr);
-    grid-template-areas:
-      "main controls"
-      "main notices"
-      "main cctv";
-    gap: 18px;
-  }
-
-  .student-panel[data-display-mode="landscape"] .student-room-shell > .student-control-row {
-    grid-area: controls;
-  }
-
-  .student-panel[data-display-mode="landscape"] .student-room-shell > .student-notices {
-    grid-area: notices;
-  }
-
-  .student-panel[data-display-mode="landscape"] .student-room-shell > .student-room-main {
-    grid-area: main;
-  }
-
-  .student-panel[data-display-mode="landscape"] .student-room-shell > .student-cctv-section {
-    grid-area: cctv;
+  .student-panel[data-display-mode="landscape"] .student-cctv-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
