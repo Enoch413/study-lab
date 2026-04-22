@@ -472,13 +472,8 @@ button {
   aspect-ratio: 4 / 5;
 }
 
-.student-video-shell--main {
+.student-video-main-wrap {
   width: min(100%, 520px);
-}
-
-.student-video-shell--landscape {
-  width: min(100%, 340px);
-  aspect-ratio: 4 / 5;
 }
 
 .student-room-main {
@@ -655,51 +650,78 @@ button {
   justify-items: center;
 }
 
-.student-video-shell--landscape .video-overlay {
-  inset: 20px 18px auto auto;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 14px;
+.student-video-shell--landscape .video-custom-overlay {
+  display: grid;
+  place-items: center;
+  padding: 18px;
 }
 
-.student-video-shell--landscape .video-overlay .pill {
-  min-width: 88px;
-  justify-content: center;
-  transform: rotate(90deg);
+.student-video-landscape-ui {
+  width: 320px;
+  max-width: 320px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 12px;
+  transform: rotate(90deg) scale(0.8);
   transform-origin: center;
+  pointer-events: auto;
 }
 
-.student-video-shell--landscape .video-footer {
-  inset: auto auto 86px -14px;
-  max-width: 190px;
-  transform: rotate(90deg);
-  transform-origin: left bottom;
+.student-video-landscape-top,
+.student-video-landscape-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.student-video-shell--landscape .student-video-clock {
-  inset: auto 14px 28px auto;
-  transform: rotate(90deg);
-  transform-origin: center;
+.student-video-landscape-top .pill,
+.student-video-landscape-bottom .pill {
+  white-space: nowrap;
 }
 
-.student-video-shell--landscape .student-video-pledge-shell {
-  inset: 50% auto auto 50%;
-  width: auto;
-  transform: translate(-50%, -50%);
+.student-video-landscape-center {
+  display: grid;
+  place-items: center;
+  min-height: 178px;
 }
 
-.student-video-shell--landscape .student-video-pledge-display,
-.student-video-shell--landscape .student-video-pledge-form {
-  width: 220px;
-  max-width: 220px;
+.student-video-landscape-center .student-video-pledge-display,
+.student-video-landscape-center .student-video-pledge-form {
+  width: 100%;
+  max-width: none;
   margin: 0;
-  transform: rotate(90deg);
-  transform-origin: center;
 }
 
-.student-video-shell--landscape .student-video-pledge-display strong {
-  font-size: clamp(1rem, 4vw, 1.35rem);
+.student-video-landscape-center .student-video-pledge-display strong {
+  font-size: clamp(1rem, 3.2vw, 1.35rem);
   line-height: 1.35;
+}
+
+.student-video-landscape-footer {
+  flex: 1 1 auto;
+  padding: 9px 12px;
+  border-radius: 16px;
+  background: rgba(15, 20, 19, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.student-video-landscape-clock {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 14px;
+  background: rgba(12, 20, 21, 0.76);
+  color: #fff;
+  font-size: 0.94rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .student-video-pledge-display,
@@ -997,19 +1019,29 @@ button {
     min-height: 96px;
   }
 
-  .student-video-shell--landscape .video-footer {
-    inset: auto auto 70px -16px;
-    max-width: 168px;
+  .student-video-shell--landscape .video-custom-overlay {
+    padding: 14px;
   }
 
-  .student-video-shell--landscape .student-video-clock {
-    inset: auto 10px 22px auto;
+  .student-video-landscape-ui {
+    width: 276px;
+    max-width: 276px;
+    gap: 10px;
+    transform: rotate(90deg) scale(0.72);
   }
 
-  .student-video-shell--landscape .student-video-pledge-display,
-  .student-video-shell--landscape .student-video-pledge-form {
-    width: 188px;
-    max-width: 188px;
+  .student-video-landscape-center {
+    min-height: 154px;
+  }
+
+  .student-video-landscape-footer {
+    font-size: 0.72rem;
+  }
+
+  .student-video-landscape-clock {
+    min-height: 34px;
+    padding: 0 10px;
+    font-size: 0.82rem;
   }
 
   .student-cctv-grid {

@@ -13,6 +13,7 @@ interface LiveVideoTileProps {
   footerText?: string | null;
   className?: string;
   overlayContent?: ReactNode;
+  hideDefaultChrome?: boolean;
 }
 
 export function LiveVideoTile({
@@ -26,6 +27,7 @@ export function LiveVideoTile({
   footerText = null,
   className = "",
   overlayContent = null,
+  hideDefaultChrome = false,
 }: LiveVideoTileProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const shellClassName = ["video-shell", className].filter(Boolean).join(" ");
@@ -58,14 +60,16 @@ export function LiveVideoTile({
           {subtitle}
         </div>
       )}
-      <div className="video-overlay">
-        <span className="pill">{title}</span>
-        <span className="pill" data-tone={tone}>
-          {statusText}
-        </span>
-      </div>
+      {!hideDefaultChrome ? (
+        <div className="video-overlay">
+          <span className="pill">{title}</span>
+          <span className="pill" data-tone={tone}>
+            {statusText}
+          </span>
+        </div>
+      ) : null}
       {overlayContent ? <div className="video-custom-overlay">{overlayContent}</div> : null}
-      {footerText ? <div className="video-footer">{footerText}</div> : null}
+      {!hideDefaultChrome && footerText ? <div className="video-footer">{footerText}</div> : null}
     </div>
   );
 }

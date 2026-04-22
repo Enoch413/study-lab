@@ -100,48 +100,6 @@ export function StudentDashboard(props: StudentDashboardProps) {
   const roomFooterText = `현재 메인룸 인원 ${Math.max(props.activeStudentCount, 1)}명`;
   const visibleCompanions = props.activeStudents.slice(0, MAX_VISIBLE_COMPANIONS);
   const hiddenCompanionCount = Math.max(props.activeStudents.length - visibleCompanions.length, 0);
-  const overlayContent = (
-    <>
-      <div className="student-video-clock">{formattedStudyClock}</div>
-
-      <div className="student-video-pledge-shell">
-        {isEditingPledge ? (
-          <form className="student-video-pledge-form" onSubmit={handlePledgeSubmit}>
-            <label className="student-video-pledge-label" htmlFor="student-daily-pledge">
-              오늘의 각오
-            </label>
-            <textarea
-              ref={pledgeInputRef}
-              id="student-daily-pledge"
-              className="student-video-pledge-input"
-              rows={3}
-              maxLength={DAILY_PLEDGE_MAX_LENGTH}
-              placeholder="여기를 눌러서 오늘의 각오를 입력하세요"
-              value={pledgeText}
-              onChange={(event) => setPledgeText(event.target.value)}
-            />
-            <div className="student-video-pledge-actions">
-              <span>{trimmedPledgeText.length}/{DAILY_PLEDGE_MAX_LENGTH}</span>
-              <button className="student-video-action-button" type="submit">
-                완료
-              </button>
-            </div>
-          </form>
-        ) : (
-          <button
-            className="student-video-pledge-display"
-            onClick={() => setIsEditingPledge(true)}
-            type="button"
-          >
-            <span className="student-video-pledge-label">오늘의 각오</span>
-            <strong data-empty={!trimmedPledgeText}>
-              {trimmedPledgeText || "여기를 눌러서 오늘의 각오를 입력하세요"}
-            </strong>
-          </button>
-        )}
-      </div>
-    </>
-  );
 
   useEffect(() => {
     const savedDisplayMode = window.localStorage.getItem(displayModeStorageKey);
@@ -176,6 +134,98 @@ export function StudentDashboard(props: StudentDashboardProps) {
   function handlePledgeSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsEditingPledge(false);
+  }
+
+  function renderPledgeCard() {
+    if (isEditingPledge) {
+      return (
+        <form className="student-video-pledge-form" onSubmit={handlePledgeSubmit}>
+          <label className="student-video-pledge-label" htmlFor="student-daily-pledge">
+            오늘의 각오
+          </label>
+          <textarea
+            ref={pledgeInputRef}
+            id="student-daily-pledge"
+            className="student-video-pledge-input"
+            rows={3}
+            maxLength={DAILY_PLEDGE_MAX_LENGTH}
+            placeholder="여기를 눌러서 오늘의 각오를 입력하세요"
+            value={pledgeText}
+            onChange={(event) => setPledgeText(event.target.value)}
+          />
+          <div className="student-video-pledge-actions">
+            <span>{trimmedPledgeText.length}/{DAILY_PLEDGE_MAX_LENGTH}</span>
+            <button className="student-video-action-button" type="submit">
+              완료
+            </button>
+          </div>
+        </form>
+      );
+    }
+
+    return (
+      <button className="student-video-pledge-display" onClick={() => setIsEditingPledge(true)} type="button">
+        <span className="student-video-pledge-label">오늘의 각오</span>
+        <strong data-empty={!trimmedPledgeText}>
+          {trimmedPledgeText || "여기를 눌러서 오늘의 각오를 입력하세요"}
+        </strong>
+      </button>
+    );
+  }
+
+  function renderCameraOverlay(config: {
+    title: string;
+    tone: "good" | "warn" | "danger";
+    statusText: string;
+    footerText: string;
+  }) {
+    if (displayMode === "landscape") {
+      return (
+        <div className="student-video-landscape-ui">
+          <div className="student-video-landscape-top">
+            <span className="pill">{config.title}</span>
+            <span className="pill" data-tone={config.tone}>
+              {config.statusText}
+            </span>
+          </div>
+          <div className="student-video-landscape-center">{renderPledgeCard()}</div>
+          <div className="student-video-landscape-bottom">
+            <div className="student-video-landscape-footer">{config.footerText}</div>
+            <div className="student-video-landscape-clock">{formattedStudyClock}</div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="student-video-clock">{formattedStudyClock}</div>
+        <div className="student-video-pledge-shell">{renderPledgeCard()}</div>
+      </>
+    );
+  }
+
+  function renderStudentVideoTile(config: {
+    title: string;
+    subtitle: string;
+    tone: "good" | "warn" | "danger";
+    statusText: string;
+    footerText: string;
+  }) {
+    return (
+      <LiveVideoTile
+        title={config.title}
+        subtitle={config.subtitle}
+        stream={props.stream}
+        mirrored
+        tone={config.tone}
+        statusText={config.statusText}
+        className={`student-video-shell student-video-shell--${displayMode}`}
+        footerText={config.footerText}
+        overlayContent={renderCameraOverlay(config)}
+        hideDefaultChrome={displayMode === "landscape"}
+      />
+    );
   }
 
   return (
@@ -218,17 +268,13 @@ export function StudentDashboard(props: StudentDashboardProps) {
       {!props.isEntered ? (
         <div className="student-prep-shell">
           <div className={`student-video-frame student-video-frame--${displayMode}`}>
-            <LiveVideoTile
-              title="내 화면"
-              subtitle="카메라를 켜서 각도와 위치를 먼저 확인하세요."
-              stream={props.stream}
-              mirrored
-              tone={props.hasPreviewStream ? "good" : "warn"}
-              statusText={props.hasPreviewStream ? "미리보기" : "대기"}
-              className={`student-video-shell student-video-shell--${displayMode}`}
-              footerText={previewFooterText}
-              overlayContent={overlayContent}
-            />
+            {renderStudentVideoTile({
+              title: "내 화면",
+              subtitle: "카메라를 켜서 각도와 위치를 먼저 확인하세요.",
+              tone: props.hasPreviewStream ? "good" : "warn",
+              statusText: props.hasPreviewStream ? "미리보기" : "대기",
+              footerText: previewFooterText,
+            })}
           </div>
 
           <div className="student-control-row">
@@ -337,17 +383,15 @@ export function StudentDashboard(props: StudentDashboardProps) {
 
           <div className="student-room-main">
             <div className={`student-video-frame student-video-frame--${displayMode}`}>
-              <LiveVideoTile
-                title="내 화면"
-                subtitle="카메라 미리보기"
-                stream={props.stream}
-                mirrored
-                tone={cameraTone}
-                statusText={props.cameraStatus === "ON" ? "실시간" : "꺼짐"}
-                className={`student-video-shell student-video-shell--${displayMode} student-video-shell--main`}
-                footerText={roomFooterText}
-                overlayContent={overlayContent}
-              />
+              <div className="student-video-main-wrap">
+                {renderStudentVideoTile({
+                  title: "내 화면",
+                  subtitle: "카메라 미리보기",
+                  tone: cameraTone,
+                  statusText: props.cameraStatus === "ON" ? "실시간" : "꺼짐",
+                  footerText: roomFooterText,
+                })}
+              </div>
             </div>
           </div>
 
