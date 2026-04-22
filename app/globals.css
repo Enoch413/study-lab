@@ -439,6 +439,11 @@ button {
   gap: 16px;
 }
 
+.student-panel[data-display-mode="landscape"] .student-prep-shell,
+.student-panel[data-display-mode="landscape"] .student-room-shell {
+  align-items: start;
+}
+
 .student-panel .video-shell video,
 .student-panel .video-image,
 .student-panel .video-placeholder {
@@ -472,8 +477,17 @@ button {
   aspect-ratio: 4 / 5;
 }
 
+.student-video-shell--landscape {
+  width: min(100%, 640px);
+  aspect-ratio: 16 / 9;
+}
+
 .student-video-main-wrap {
   width: min(100%, 520px);
+}
+
+.student-video-main-wrap--landscape {
+  width: min(100%, 720px);
 }
 
 .student-room-main {
@@ -496,6 +510,10 @@ button {
   padding-top: 4px;
 }
 
+.student-cctv-section--landscape {
+  align-content: start;
+}
+
 .student-cctv-head {
   display: flex;
   align-items: center;
@@ -516,6 +534,11 @@ button {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.student-cctv-grid--landscape {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
 .student-cctv-tile {
   overflow: hidden;
   border-radius: 22px;
@@ -532,6 +555,13 @@ button {
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
+}
+
+.student-cctv-screen--landscape {
+  min-height: 96px;
+  padding: 14px 16px;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .student-cctv-screen--summary {
@@ -653,16 +683,16 @@ button {
 .student-video-shell--landscape .video-custom-overlay {
   display: grid;
   place-items: center;
-  padding: 18px;
+  padding: 20px 24px;
 }
 
 .student-video-landscape-ui {
-  width: 320px;
-  max-width: 320px;
+  width: 360px;
+  max-width: 360px;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 12px;
-  transform: rotate(90deg) scale(0.8);
+  gap: 16px;
+  transform: rotate(90deg) scale(0.95);
   transform-origin: center;
   pointer-events: auto;
 }
@@ -683,7 +713,7 @@ button {
 .student-video-landscape-center {
   display: grid;
   place-items: center;
-  min-height: 178px;
+  min-height: 208px;
 }
 
 .student-video-landscape-center .student-video-pledge-display,
@@ -694,34 +724,81 @@ button {
 }
 
 .student-video-landscape-center .student-video-pledge-display strong {
-  font-size: clamp(1rem, 3.2vw, 1.35rem);
-  line-height: 1.35;
+  font-size: clamp(1.1rem, 3.8vw, 1.6rem);
+  line-height: 1.4;
 }
 
 .student-video-landscape-footer {
   flex: 1 1 auto;
-  padding: 9px 12px;
+  padding: 11px 14px;
   border-radius: 16px;
   background: rgba(15, 20, 19, 0.5);
   color: rgba(255, 255, 255, 0.9);
-  font-size: 0.76rem;
+  font-size: 0.84rem;
   line-height: 1.4;
 }
 
 .student-video-landscape-clock {
   flex: 0 0 auto;
-  min-height: 38px;
-  padding: 0 12px;
+  min-height: 42px;
+  padding: 0 14px;
   border-radius: 14px;
   background: rgba(12, 20, 21, 0.76);
   color: #fff;
-  font-size: 0.94rem;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
+}
+
+@media (min-width: 700px) {
+  .student-panel[data-display-mode="landscape"] .student-prep-shell {
+    grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+    grid-template-areas:
+      "video controls"
+      "video notices";
+    gap: 18px;
+  }
+
+  .student-panel[data-display-mode="landscape"] .student-prep-shell > .student-video-frame {
+    grid-area: video;
+  }
+
+  .student-panel[data-display-mode="landscape"] .student-prep-shell > .student-control-row {
+    grid-area: controls;
+  }
+
+  .student-panel[data-display-mode="landscape"] .student-prep-shell > .student-notices {
+    grid-area: notices;
+  }
+
+  .student-panel[data-display-mode="landscape"] .student-room-shell {
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.9fr);
+    grid-template-areas:
+      "controls controls"
+      "notices notices"
+      "main cctv";
+    gap: 18px;
+  }
+
+  .student-panel[data-display-mode="landscape"] .student-room-shell > .student-control-row {
+    grid-area: controls;
+  }
+
+  .student-panel[data-display-mode="landscape"] .student-room-shell > .student-notices {
+    grid-area: notices;
+  }
+
+  .student-panel[data-display-mode="landscape"] .student-room-shell > .student-room-main {
+    grid-area: main;
+  }
+
+  .student-panel[data-display-mode="landscape"] .student-room-shell > .student-cctv-section {
+    grid-area: cctv;
+  }
 }
 
 .student-video-pledge-display,
@@ -1024,28 +1101,32 @@ button {
   }
 
   .student-video-landscape-ui {
-    width: 276px;
-    max-width: 276px;
-    gap: 10px;
-    transform: rotate(90deg) scale(0.72);
+    width: 320px;
+    max-width: 320px;
+    gap: 12px;
+    transform: rotate(90deg) scale(0.88);
   }
 
   .student-video-landscape-center {
-    min-height: 154px;
+    min-height: 182px;
   }
 
   .student-video-landscape-footer {
-    font-size: 0.72rem;
+    font-size: 0.78rem;
   }
 
   .student-video-landscape-clock {
-    min-height: 34px;
-    padding: 0 10px;
-    font-size: 0.82rem;
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 0.9rem;
   }
 
   .student-cctv-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .student-cctv-grid--landscape {
+    grid-template-columns: 1fr;
   }
 }
 

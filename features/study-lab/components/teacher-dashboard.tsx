@@ -169,8 +169,6 @@ function formatDuration(totalSeconds: number) {
 function formatConnectionStatus(status: TeacherDashboardItemDto["currentStatus"]) {
   switch (status) {
     case "MAIN_ROOM":
-    case "QUESTION_PENDING":
-    case "QUESTION_ROOM":
       return "입장 중";
     case "EXITED":
       return "퇴실";

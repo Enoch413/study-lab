@@ -51,12 +51,14 @@ export function StudentDashboard(props: StudentDashboardProps) {
     const normalizedName = props.studentName.trim().toLowerCase();
     return encodeURIComponent(normalizedName || "student");
   }, [props.studentName]);
+
   const displayModeStorageKey = `${CAMERA_DISPLAY_MODE_STORAGE_PREFIX}:${preferenceKey}`;
   const pledgeStorageKey = `${DAILY_PLEDGE_STORAGE_PREFIX}:${preferenceKey}`;
   const [displayMode, setDisplayMode] = useState<CameraDisplayMode>("portrait");
   const [pledgeText, setPledgeText] = useState("");
   const [isEditingPledge, setIsEditingPledge] = useState(false);
   const pledgeInputRef = useRef<HTMLTextAreaElement | null>(null);
+
   const roomLabel = MAIN_STUDY_ROOM_LABEL;
   const cameraTone = props.cameraStatus === "ON" ? "good" : "warn";
   const headerTone = props.isEntered
@@ -77,10 +79,11 @@ export function StudentDashboard(props: StudentDashboardProps) {
         : "입장 전";
   const trimmedPledgeText = pledgeText.trim();
   const formattedStudyClock = formatStudyClock(props.studySeconds);
-  const previewFooterText = props.hasPreviewStream ? "" : "";
-  const roomFooterText = `함께 공부 중 ${Math.max(props.activeStudentCount, 1)}명`;
   const visibleCompanions = props.activeStudents.slice(0, MAX_VISIBLE_COMPANIONS);
-  const hiddenCompanionCount = Math.max(props.activeStudents.length - visibleCompanions.length, 0);
+  const hiddenCompanionCount = Math.max(
+    props.activeStudents.length - visibleCompanions.length,
+    0,
+  );
 
   useEffect(() => {
     const savedDisplayMode = window.localStorage.getItem(displayModeStorageKey);
@@ -216,7 +219,7 @@ export function StudentDashboard(props: StudentDashboardProps) {
   }
 
   return (
-    <section className="panel student-panel">
+    <section className="panel student-panel" data-display-mode={displayMode}>
       <div className="panel-head">
         <div className="panel-head-copy">
           <h2 className="panel-title">
@@ -224,7 +227,7 @@ export function StudentDashboard(props: StudentDashboardProps) {
           </h2>
           {props.isEntered ? (
             <p className="subtle">
-              내 화면을 확인하면서 아래에서 함께 공부 중인 학생 수를 볼 수 있습니다.
+              내 화면을 확인하면서 함께 공부 중인 학생 화면도 볼 수 있습니다.
             </p>
           ) : null}
         </div>
@@ -255,14 +258,14 @@ export function StudentDashboard(props: StudentDashboardProps) {
       </div>
 
       {!props.isEntered ? (
-        <div className="student-prep-shell">
+        <div className={`student-prep-shell student-prep-shell--${displayMode}`}>
           <div className={`student-video-frame student-video-frame--${displayMode}`}>
             {renderStudentVideoTile({
               title: "카메라 화면",
               subtitle: "",
               tone: props.hasPreviewStream ? "good" : "warn",
               statusText: props.hasPreviewStream ? "미리보기" : "대기",
-              footerText: previewFooterText,
+              footerText: "",
             })}
           </div>
 
@@ -304,7 +307,7 @@ export function StudentDashboard(props: StudentDashboardProps) {
           />
         </div>
       ) : (
-        <div className="student-room-shell">
+        <div className={`student-room-shell student-room-shell--${displayMode}`}>
           <div className="student-control-row student-control-row--room">
             {props.cameraStatus === "ON" ? (
               <button
@@ -341,19 +344,19 @@ export function StudentDashboard(props: StudentDashboardProps) {
 
           <div className="student-room-main">
             <div className={`student-video-frame student-video-frame--${displayMode}`}>
-              <div className="student-video-main-wrap">
+              <div className={`student-video-main-wrap student-video-main-wrap--${displayMode}`}>
                 {renderStudentVideoTile({
                   title: "카메라 화면",
                   subtitle: "",
                   tone: cameraTone,
                   statusText: props.cameraStatus === "ON" ? "실시간" : "꺼짐",
-                  footerText: roomFooterText,
+                  footerText: `함께 공부 중 ${Math.max(props.activeStudentCount, 1)}명`,
                 })}
               </div>
             </div>
           </div>
 
-          <div className="student-cctv-section">
+          <div className={`student-cctv-section student-cctv-section--${displayMode}`}>
             <div className="student-cctv-head">
               <h3 className="student-section-title">함께 공부 중인 학생</h3>
               <span className="pill" data-tone={visibleCompanions.length > 0 ? "good" : "warn"}>
@@ -362,12 +365,18 @@ export function StudentDashboard(props: StudentDashboardProps) {
             </div>
 
             {visibleCompanions.length > 0 ? (
-              <div className="student-cctv-grid">
+              <div className={`student-cctv-grid student-cctv-grid--${displayMode}`}>
                 {visibleCompanions.map((student) => (
-                  <CompanionTile key={student.userId} student={student} />
+                  <CompanionTile
+                    key={student.userId}
+                    student={student}
+                    displayMode={displayMode}
+                  />
                 ))}
                 {hiddenCompanionCount > 0 ? (
-                  <article className="student-cctv-tile student-cctv-tile--summary">
+                  <article
+                    className={`student-cctv-tile student-cctv-tile--summary student-cctv-tile--${displayMode}`}
+                  >
                     <div className="student-cctv-screen student-cctv-screen--summary">
                       <strong>+{hiddenCompanionCount}</strong>
                       <span>더 공부 중</span>
@@ -426,10 +435,13 @@ function NoticeStack(props: {
   );
 }
 
-function CompanionTile(props: { student: ActiveStudentTileDto }) {
+function CompanionTile(props: {
+  student: ActiveStudentTileDto;
+  displayMode: CameraDisplayMode;
+}) {
   return (
-    <article className="student-cctv-tile">
-      <div className="student-cctv-screen">
+    <article className={`student-cctv-tile student-cctv-tile--${props.displayMode}`}>
+      <div className={`student-cctv-screen student-cctv-screen--${props.displayMode}`}>
         <span
           className="student-cctv-badge"
           data-tone={props.student.cameraStatus === "ON" ? "good" : "warn"}

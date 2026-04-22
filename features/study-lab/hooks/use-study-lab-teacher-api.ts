@@ -34,8 +34,23 @@ export function useStudyLabTeacherApi(options?: { enabled?: boolean }) {
     const json = (await response.json()) as TeacherDashboardApiResponse;
 
     if (json.ok) {
-      setItems(json.data.items);
-      setSelectedStudentId((current) => current ?? json.data.items[0]?.studentUserId ?? null);
+      const normalizedItems = json.data.items.map((item) => {
+        if (
+          item.currentStatus === "NONE" ||
+          item.currentStatus === "MAIN_ROOM" ||
+          item.currentStatus === "EXITED" ||
+          item.currentStatus === "DISCONNECTED"
+        ) {
+          return item;
+        }
+
+        return {
+          ...item,
+          currentStatus: "MAIN_ROOM" as const,
+        };
+      });
+      setItems(normalizedItems);
+      setSelectedStudentId((current) => current ?? normalizedItems[0]?.studentUserId ?? null);
     }
   }, [isEnabled]);
 
