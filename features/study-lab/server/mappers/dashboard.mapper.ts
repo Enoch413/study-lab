@@ -5,6 +5,7 @@ import type {
   StudySession,
 } from "../../types/domain";
 import type {
+  ActiveStudentTileDto,
   PendingQuestionDto,
   StudentDashboardDto,
   StudyLabMeDto,
@@ -55,6 +56,7 @@ export function toStudentDashboardDto(args: {
   session: StudySession | null;
   todayStudySeconds: number;
   activeStudentCount: number;
+  activeStudents: ActiveStudentTileDto[];
   question: QuestionRequest | null;
   recentSessions: StudySession[];
 }): StudentDashboardDto {
@@ -62,6 +64,7 @@ export function toStudentDashboardDto(args: {
     session: args.session ? toSessionSummaryDto(args.session, MAIN_STUDY_ROOM_LABEL) : null,
     todayStudySeconds: args.todayStudySeconds,
     activeStudentCount: args.activeStudentCount,
+    activeStudents: args.activeStudents,
     question: toQuestionSummary(args.question),
     recentSessions: args.recentSessions.map((session) =>
       toSessionSummaryDto(session, MAIN_STUDY_ROOM_LABEL),

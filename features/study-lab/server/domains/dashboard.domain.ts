@@ -49,7 +49,7 @@ export class DashboardDomain {
     const recentSessions = await this.deps.studySessionRepository.listRecentByUserId(viewer.userId, 10);
     const activeDashboardRows = await this.deps.studySessionRepository.listForTeacherDashboard({
       page: 1,
-      pageSize: 1,
+      pageSize: 12,
       onlyActive: true,
     });
     const todaySummary = await this.deps.dailyStudySummaryRepository.findByUserIdAndDate(
@@ -67,6 +67,14 @@ export class DashboardDomain {
         serverNow,
       }),
       activeStudentCount: activeDashboardRows.total,
+      activeStudents: activeDashboardRows.rows
+        .filter((row) => row.session.userId !== viewer.userId)
+        .map((row) => ({
+          userId: row.session.userId,
+          studentName: row.studentName,
+          connectionStatus: row.session.connectionStatus,
+          cameraStatus: row.session.cameraStatus,
+        })),
     });
   }
 

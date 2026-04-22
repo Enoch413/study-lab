@@ -21,6 +21,7 @@ import type {
   StudentDashboardApiResponse,
 } from "../types/api";
 import type {
+  ActiveStudentTileDto,
   QuestionSummaryDto,
   SessionSummaryDto,
   StudentDashboardDto,
@@ -59,7 +60,6 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     STUDY_LAB_DEV_STUDENTS[0].firebaseUid,
   );
   const [dashboard, setDashboard] = useState<StudentDashboardDto | null>(null);
-  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [permissionMessage, setPermissionMessage] = useState<string | null>(null);
   const [questionEndedToast, setQuestionEndedToast] = useState<string | null>(null);
   const [autoExitReason, setAutoExitReason] = useState<string | null>(null);
@@ -67,8 +67,11 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   const [now, setNow] = useState(Date.now());
   const [clientInstanceId, setClientInstanceId] = useState<string | null>(null);
   const [isCameraUpdating, setIsCameraUpdating] = useState(false);
+  const [isPreparingCamera, setIsPreparingCamera] = useState(false);
+  const [isEntering, setIsEntering] = useState(false);
   const [isQuestionSubmitting, setIsQuestionSubmitting] = useState(false);
   const [isQuestionCanceling, setIsQuestionCanceling] = useState(false);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   const selectedStudent = useMemo(() => {
@@ -236,6 +239,8 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     setAutoExitReason(null);
     setCameraOffStartedAt(null);
     setIsCameraUpdating(false);
+    setIsPreparingCamera(false);
+    setIsEntering(false);
     setIsQuestionSubmitting(false);
     setIsQuestionCanceling(false);
   }, [isEnabled]);
@@ -248,6 +253,8 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     setAutoExitReason(null);
     setCameraOffStartedAt(null);
     setIsCameraUpdating(false);
+    setIsPreparingCamera(false);
+    setIsEntering(false);
     setIsQuestionSubmitting(false);
     setIsQuestionCanceling(false);
     if (isEnabled) {
@@ -270,25 +277,35 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     [],
   );
 
+  async function requestCameraPreview() {
+    if (!isEnabled) {
+      return;
+    }
+
+    setPermissionMessage(null);
+    setIsPreparingCamera(true);
+
+    try {
+      await ensurePreviewStream();
+    } finally {
+      setIsPreparingCamera(false);
+    }
+  }
+
   async function requestCameraAndEnter() {
     if (!isEnabled) {
       return;
     }
 
     setPermissionMessage(null);
+    setIsEntering(true);
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: "user",
-        },
-        audio: false,
-      });
+      const hasPreviewStream = await ensurePreviewStream();
 
-      stopStream();
-      streamRef.current = stream;
+      if (!hasPreviewStream) {
+        return;
+      }
 
       const response = await fetch("/api/study-lab/sessions/enter", {
         method: "POST",
@@ -308,11 +325,11 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
         session: json.data.session,
         todayStudySeconds: current?.todayStudySeconds ?? 0,
         activeStudentCount: Math.max(current?.activeStudentCount ?? 0, 1),
+        activeStudents: current?.activeStudents ?? [],
         question: current?.question ?? null,
         recentSessions: current?.recentSessions ?? [],
       }));
       setCameraOffStartedAt(null);
-      setIsGuideOpen(false);
       await refreshDashboard();
     } catch (error) {
       stopStream();
@@ -321,6 +338,8 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
           ? error.message
           : "카메라를 허용해야 입실할 수 있습니다.",
       );
+    } finally {
+      setIsEntering(false);
     }
   }
 
@@ -427,6 +446,7 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
         session: null,
         todayStudySeconds: json.data.todayStudySeconds,
         activeStudentCount: Math.max((current?.activeStudentCount ?? 1) - 1, 0),
+        activeStudents: [],
         question: null,
         recentSessions: current?.recentSessions ?? [],
       }));
@@ -441,11 +461,52 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
 
   function stopStream() {
     if (!streamRef.current) {
+      setLocalStream(null);
       return;
     }
 
     streamRef.current.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
+    setLocalStream(null);
+  }
+
+  function stopPreviewCamera() {
+    if (isEntered) {
+      return;
+    }
+
+    stopStream();
+    setPermissionMessage(null);
+  }
+
+  async function ensurePreviewStream() {
+    if (streamRef.current) {
+      setLocalStream(streamRef.current);
+      return true;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "user",
+        },
+        audio: false,
+      });
+
+      stopStream();
+      streamRef.current = stream;
+      setLocalStream(stream);
+      return true;
+    } catch (error) {
+      setPermissionMessage(
+        error instanceof Error && error.message
+          ? error.message
+          : "카메라를 허용해야 입실할 수 있습니다.",
+      );
+      return false;
+    }
   }
 
   return {
@@ -460,20 +521,20 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
     questionStatus,
     studySeconds: dashboard?.todayStudySeconds ?? 0,
     activeStudentCount: dashboard?.activeStudentCount ?? 0,
+    activeStudents: (dashboard?.activeStudents ?? []) as ActiveStudentTileDto[],
     cameraOffSeconds,
-    stream: streamRef.current,
-    isGuideOpen,
+    stream: localStream,
+    hasPreviewStream: !!localStream,
     permissionMessage,
     questionEndedToast,
     autoExitReason,
     isCameraUpdating,
+    isPreparingCamera,
+    isEntering,
     isQuestionSubmitting,
     isQuestionCanceling,
-    openGuide: () => {
-      setPermissionMessage(null);
-      setIsGuideOpen(true);
-    },
-    closeGuide: () => setIsGuideOpen(false),
+    requestCameraPreview,
+    stopPreviewCamera,
     requestCameraAndEnter,
     exitStudyLab: () => void exitStudyLab(),
     turnCameraOff: () => void turnCameraOff(),

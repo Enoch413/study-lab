@@ -41,10 +41,18 @@ export interface StudyLabMeDto {
   activeQuestion: QuestionSummaryDto | null;
 }
 
+export interface ActiveStudentTileDto {
+  userId: string;
+  studentName: string;
+  connectionStatus: StudyConnectionStatus;
+  cameraStatus: StudyCameraStatus;
+}
+
 export interface StudentDashboardDto {
   session: SessionSummaryDto | null;
   todayStudySeconds: number;
   activeStudentCount: number;
+  activeStudents: ActiveStudentTileDto[];
   question: QuestionSummaryDto | null;
   recentSessions: SessionSummaryDto[];
 }

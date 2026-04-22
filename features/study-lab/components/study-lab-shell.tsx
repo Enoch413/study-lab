@@ -50,13 +50,6 @@ export function StudyLabShell() {
           <div className="hero-badges">{statusBadges}</div>
         )}
 
-        {activeView === "student" ? (
-          <p className="subtle hero-support-copy">
-            카메라 화면은 <strong>본인 확인용</strong>으로만 표시됩니다. 스터디 카페 안에서 다른
-            사용자와 선생님에게 <strong>절대 공개되지 않으니</strong> 편하게 이용해주세요.
-          </p>
-        ) : null}
-
         {bannerMessage ? (
           <div className="banner" data-tone="danger">
             {bannerMessage}
@@ -83,19 +76,22 @@ export function StudyLabShell() {
             micPolicy={studentApi.micPolicy}
             studySeconds={studentApi.studySeconds}
             activeStudentCount={studentApi.activeStudentCount}
+            activeStudents={studentApi.activeStudents}
             cameraOffSeconds={studentApi.cameraOffSeconds}
             stream={studentApi.stream}
-            isGuideOpen={studentApi.isGuideOpen}
+            hasPreviewStream={studentApi.hasPreviewStream}
             permissionMessage={studentApi.permissionMessage}
             questionStatus={studentApi.questionStatus}
             questionEndedToast={studentApi.questionEndedToast}
             autoExitReason={studentApi.autoExitReason}
             isQuestionActionEnabled={!studentApi.isQuestionSubmitting && !studentApi.isQuestionCanceling}
             isCameraActionPending={studentApi.isCameraUpdating}
+            isPreparingCamera={studentApi.isPreparingCamera}
+            isEntering={studentApi.isEntering}
             isQuestionSubmitting={studentApi.isQuestionSubmitting}
             isQuestionCanceling={studentApi.isQuestionCanceling}
-            onOpenGuide={studentApi.openGuide}
-            onCloseGuide={studentApi.closeGuide}
+            onPrepareCameraPreview={studentApi.requestCameraPreview}
+            onStopCameraPreview={studentApi.stopPreviewCamera}
             onRequestCameraAndEnter={studentApi.requestCameraAndEnter}
             onExit={studentApi.exitStudyLab}
             onTurnCameraOff={studentApi.turnCameraOff}
