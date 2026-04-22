@@ -25,6 +25,16 @@ export function StudyLabShell() {
         ? "연결됨"
         : "로그인 필요";
   const bannerMessage = getVisibleBannerMessage(firebaseViewer.message);
+  const statusBadges = (
+    <>
+      <span className="pill" data-tone={authTone}>
+        {authLabel}
+      </span>
+      <span className="pill" data-tone={activeView ? "good" : "warn"}>
+        {formatRoleLabel(firebaseViewer.mappedRole)}
+      </span>
+    </>
+  );
 
   return (
     <main className="page-shell" data-view={activeView ?? "auth"}>
@@ -34,17 +44,11 @@ export function StudyLabShell() {
             <div className="hero-meta">
               <span className="hero-meta-item">{viewerMetaLabel}</span>
             </div>
+            <div className="hero-badges hero-badges-inline">{statusBadges}</div>
           </div>
-        ) : null}
-
-        <div className="hero-badges">
-          <span className="pill" data-tone={authTone}>
-            {authLabel}
-          </span>
-          <span className="pill" data-tone={activeView ? "good" : "warn"}>
-            {formatRoleLabel(firebaseViewer.mappedRole)}
-          </span>
-        </div>
+        ) : (
+          <div className="hero-badges">{statusBadges}</div>
+        )}
 
         {bannerMessage ? (
           <div className="banner" data-tone="danger">

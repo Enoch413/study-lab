@@ -90,9 +90,11 @@ button {
 }
 
 .hero-top {
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
-  justify-items: start;
   width: 100%;
 }
 
@@ -124,6 +126,7 @@ button {
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-start;
+  min-width: 0;
 }
 
 .hero-meta-item {
@@ -145,6 +148,12 @@ button {
   justify-content: flex-start;
   align-items: center;
   width: 100%;
+}
+
+.hero-badges-inline {
+  justify-content: flex-end;
+  width: auto;
+  margin-left: auto;
 }
 
 .board-grid {
