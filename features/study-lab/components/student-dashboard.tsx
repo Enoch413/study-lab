@@ -77,9 +77,7 @@ export function StudentDashboard(props: StudentDashboardProps) {
         : "입장 전";
   const trimmedPledgeText = pledgeText.trim();
   const formattedStudyClock = formatStudyClock(props.studySeconds);
-  const previewFooterText = props.hasPreviewStream
-    ? "카메라 위치와 각도를 확인한 뒤 메인룸에 입장하세요."
-    : "카메라를 먼저 켜서 화면을 확인해 주세요.";
+  const previewFooterText = props.hasPreviewStream ? "" : "";
   const roomFooterText = `함께 공부 중 ${Math.max(props.activeStudentCount, 1)}명`;
   const visibleCompanions = props.activeStudents.slice(0, MAX_VISIBLE_COMPANIONS);
   const hiddenCompanionCount = Math.max(props.activeStudents.length - visibleCompanions.length, 0);
@@ -224,11 +222,11 @@ export function StudentDashboard(props: StudentDashboardProps) {
           <h2 className="panel-title">
             {props.isEntered ? roomLabel : "메인룸 입장 준비"}
           </h2>
-          <p className="subtle">
-            {props.isEntered
-              ? "내 화면을 확인하면서 아래에서 함께 공부 중인 학생 수를 볼 수 있습니다."
-              : "카메라를 먼저 켜고 화면 구도와 오늘의 각오를 확인한 뒤 입장하세요."}
-          </p>
+          {props.isEntered ? (
+            <p className="subtle">
+              내 화면을 확인하면서 아래에서 함께 공부 중인 학생 수를 볼 수 있습니다.
+            </p>
+          ) : null}
         </div>
         <span className="pill" data-tone={headerTone}>
           {headerLabel}
@@ -261,7 +259,7 @@ export function StudentDashboard(props: StudentDashboardProps) {
           <div className={`student-video-frame student-video-frame--${displayMode}`}>
             {renderStudentVideoTile({
               title: "카메라 화면",
-              subtitle: "카메라를 켜서 각도와 위치를 먼저 확인해 주세요.",
+              subtitle: "",
               tone: props.hasPreviewStream ? "good" : "warn",
               statusText: props.hasPreviewStream ? "미리보기" : "대기",
               footerText: previewFooterText,
@@ -346,7 +344,7 @@ export function StudentDashboard(props: StudentDashboardProps) {
               <div className="student-video-main-wrap">
                 {renderStudentVideoTile({
                   title: "카메라 화면",
-                  subtitle: "카메라 미리보기",
+                  subtitle: "",
                   tone: cameraTone,
                   statusText: props.cameraStatus === "ON" ? "실시간" : "꺼짐",
                   footerText: roomFooterText,
