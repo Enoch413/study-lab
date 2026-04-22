@@ -42,7 +42,6 @@ export function TeacherDashboard(props: TeacherDashboardProps) {
     <section className="panel teacher-panel">
       <div className="panel-head">
         <div className="panel-head-copy">
-          <div className="eyebrow">강사</div>
           <h2 className="panel-title">대시보드</h2>
         </div>
         <span className="pill" data-tone={liveCount > 0 ? "good" : "warn"}>

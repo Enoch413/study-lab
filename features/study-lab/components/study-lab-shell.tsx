@@ -16,6 +16,7 @@ export function StudyLabShell() {
   const teacherApi = useStudyLabTeacherApi({ enabled: activeView === "teacher" });
 
   const viewerName = firebaseViewer.name ?? firebaseViewer.email ?? "로그인 대기";
+  const viewerMetaLabel = firebaseViewer.name ?? firebaseViewer.email;
   const authTone = activeView ? "good" : firebaseViewer.status === "loading" ? "warn" : "danger";
   const authLabel =
     firebaseViewer.status === "loading"
@@ -23,31 +24,35 @@ export function StudyLabShell() {
       : activeView
         ? "연결됨"
         : "로그인 필요";
+  const bannerMessage = getVisibleBannerMessage(firebaseViewer.message);
+  const statusBadges = (
+    <>
+      <span className="pill" data-tone={authTone}>
+        {authLabel}
+      </span>
+      <span className="pill" data-tone={activeView ? "good" : "warn"}>
+        {formatRoleLabel(firebaseViewer.mappedRole)}
+      </span>
+    </>
+  );
 
   return (
     <main className="page-shell" data-view={activeView ?? "auth"}>
       <section className="hero-card">
-        <div className="hero-top">
-          <span className="hero-kicker">Study Lab</span>
-          <h1 className="hero-title">ONLINE STUDY CAFE</h1>
-          <div className="hero-meta">
-            <span className="hero-meta-item">{viewerName}</span>
-            {firebaseViewer.email ? <span className="hero-meta-item">{firebaseViewer.email}</span> : null}
+        {viewerMetaLabel ? (
+          <div className="hero-top">
+            <div className="hero-meta">
+              <span className="hero-meta-item">{viewerMetaLabel}</span>
+            </div>
+            <div className="hero-badges hero-badges-inline">{statusBadges}</div>
           </div>
-        </div>
+        ) : (
+          <div className="hero-badges">{statusBadges}</div>
+        )}
 
-        <div className="hero-badges">
-          <span className="pill" data-tone={authTone}>
-            {authLabel}
-          </span>
-          <span className="pill" data-tone={activeView ? "good" : "warn"}>
-            {formatRoleLabel(firebaseViewer.mappedRole)}
-          </span>
-        </div>
-
-        {firebaseViewer.message ? (
+        {bannerMessage ? (
           <div className="banner" data-tone="danger">
-            {firebaseViewer.message}
+            {bannerMessage}
           </div>
         ) : null}
       </section>
@@ -130,4 +135,18 @@ function formatRoleLabel(role: StudyLabMappedRole | null): string {
     default:
       return "대기";
   }
+}
+
+function getVisibleBannerMessage(message: string | null): string | null {
+  const normalizedMessage = String(message ?? "").trim();
+
+  if (!normalizedMessage) {
+    return null;
+  }
+
+  if (normalizedMessage === "로그인이 필요합니다." || normalizedMessage === "CODE LAB 로그인 확인 중입니다.") {
+    return null;
+  }
+
+  return normalizedMessage;
 }
