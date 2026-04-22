@@ -45,13 +45,23 @@ export function useStudyLabFirebaseViewer(): StudyLabFirebaseViewerState {
       let cancelled = false;
 
       const refreshEmbeddedViewer = async (force?: boolean) => {
-        setState({
-          source: "firebase",
-          status: "loading",
-          name: null,
-          email: null,
-          mappedRole: null,
-          message: "CODE LAB 로그인 확인 중입니다.",
+        setState((current) => {
+          if (current.mappedRole) {
+            return {
+              ...current,
+              status: "loading",
+              message: null,
+            };
+          }
+
+          return {
+            source: "firebase",
+            status: "loading",
+            name: null,
+            email: null,
+            mappedRole: null,
+            message: "CODE LAB 로그인 확인 중입니다.",
+          };
         });
 
         await hydrateEmbeddedViewer(force === true, (nextState) => {
