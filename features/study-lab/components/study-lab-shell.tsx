@@ -28,8 +28,7 @@ export function StudyLabShell() {
     <main className="page-shell" data-view={activeView ?? "auth"}>
       <section className="hero-card">
         <div className="hero-top">
-          <span className="hero-kicker">Study Lab</span>
-          <h1 className="hero-title">ONLINE STUDY CAFE</h1>
+          <h1 className="hero-title">STUDY CAFE</h1>
           <div className="hero-meta">
             <span className="hero-meta-item">{viewerName}</span>
             {firebaseViewer.email ? <span className="hero-meta-item">{firebaseViewer.email}</span> : null}
