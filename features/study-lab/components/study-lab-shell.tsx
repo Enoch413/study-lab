@@ -16,9 +16,7 @@ export function StudyLabShell() {
   const teacherApi = useStudyLabTeacherApi({ enabled: activeView === "teacher" });
 
   const viewerName = firebaseViewer.name ?? firebaseViewer.email ?? "로그인 대기";
-  const viewerMetaItems = [firebaseViewer.name, firebaseViewer.email].filter(
-    (value, index, items): value is string => Boolean(value) && items.indexOf(value) === index,
-  );
+  const viewerMetaLabel = firebaseViewer.name ?? firebaseViewer.email;
   const authTone = activeView ? "good" : firebaseViewer.status === "loading" ? "warn" : "danger";
   const authLabel =
     firebaseViewer.status === "loading"
@@ -31,14 +29,10 @@ export function StudyLabShell() {
   return (
     <main className="page-shell" data-view={activeView ?? "auth"}>
       <section className="hero-card">
-        {viewerMetaItems.length > 0 ? (
+        {viewerMetaLabel ? (
           <div className="hero-top">
             <div className="hero-meta">
-              {viewerMetaItems.map((item) => (
-                <span key={item} className="hero-meta-item">
-                  {item}
-                </span>
-              ))}
+              <span className="hero-meta-item">{viewerMetaLabel}</span>
             </div>
           </div>
         ) : null}

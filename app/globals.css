@@ -82,6 +82,9 @@ button {
 }
 
 .hero-card {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
   border-radius: 32px;
   padding: 24px 20px;
 }
@@ -89,6 +92,8 @@ button {
 .hero-top {
   display: grid;
   gap: 12px;
+  justify-items: start;
+  width: 100%;
 }
 
 .hero-kicker,
@@ -118,6 +123,7 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-start;
 }
 
 .hero-meta-item {
@@ -136,7 +142,9 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 16px;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
 }
 
 .board-grid {
