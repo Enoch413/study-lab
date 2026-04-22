@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { StudentDashboard } from "./student-dashboard";
 import { TeacherDashboard } from "./teacher-dashboard";
+import { installEmbeddedCodeLabAuthRelay } from "../client/study-lab-auth-headers";
 import { useStudyLabFirebaseViewer } from "../hooks/use-study-lab-firebase-viewer";
 import { useStudyLabStudentApi } from "../hooks/use-study-lab-student-api";
 import { useStudyLabTeacherApi } from "../hooks/use-study-lab-teacher-api";
@@ -14,6 +16,10 @@ export function StudyLabShell() {
   const activeView = resolveActiveView(firebaseViewer.mappedRole);
   const studentApi = useStudyLabStudentApi({ enabled: activeView === "student" });
   const teacherApi = useStudyLabTeacherApi({ enabled: activeView === "teacher" });
+
+  useEffect(() => {
+    installEmbeddedCodeLabAuthRelay();
+  }, []);
 
   const viewerName = firebaseViewer.name ?? firebaseViewer.email ?? "로그인 대기";
   const viewerMetaLabel = firebaseViewer.name ?? firebaseViewer.email;

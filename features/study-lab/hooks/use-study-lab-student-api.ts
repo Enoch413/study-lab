@@ -7,6 +7,10 @@ import {
 } from "../constants/polling";
 import {
   getStudyLabAuthHeaders,
+  isStudyLabDetachedWindow,
+  isStudyLabEmbeddedMode,
+  navigateDetachedStudyLabWindow,
+  openDetachedStudyLabWindowShell,
   type StudyLabDevAuthUser,
 } from "../client/study-lab-auth-headers";
 import type { StudentConnectionStatus } from "../components/student-dashboard";
@@ -199,6 +203,20 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
   }, [isEntered, postHeartbeat, session?.id]);
 
   useEffect(() => {
+    if (
+      !isEnabled ||
+      !isStudyLabDetachedWindow() ||
+      !isEntered ||
+      cameraStatus !== "ON" ||
+      streamRef.current
+    ) {
+      return;
+    }
+
+    void ensurePreviewStream();
+  }, [cameraStatus, isEnabled, isEntered, session?.id]);
+
+  useEffect(() => {
     if (cameraStatus !== "OFF" || !isEntered) {
       setCameraOffStartedAt(null);
       return;
@@ -306,11 +324,16 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
 
     setPermissionMessage(null);
     setIsEntering(true);
+    const shouldDetachAfterEnter = isStudyLabEmbeddedMode() && !isStudyLabDetachedWindow();
+    const detachedWindow = shouldDetachAfterEnter ? openDetachedStudyLabWindowShell() : null;
 
     try {
       const hasPreviewStream = await ensurePreviewStream();
 
       if (!hasPreviewStream) {
+        if (detachedWindow && !detachedWindow.closed) {
+          detachedWindow.close();
+        }
         return;
       }
 
@@ -339,7 +362,18 @@ export function useStudyLabStudentApi(options?: { enabled?: boolean }) {
       });
       setCameraOffStartedAt(null);
       await refreshDashboard();
+      if (shouldDetachAfterEnter) {
+        const didOpenDetachedWindow = navigateDetachedStudyLabWindow(detachedWindow);
+        if (didOpenDetachedWindow) {
+          stopStream();
+        } else {
+          setPermissionMessage("새 창이 차단되었습니다. 팝업 차단을 해제한 뒤 다시 입장해 주세요.");
+        }
+      }
     } catch (error) {
+      if (detachedWindow && !detachedWindow.closed) {
+        detachedWindow.close();
+      }
       stopStream();
       setPermissionMessage(
         error instanceof Error && error.message

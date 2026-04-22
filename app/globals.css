@@ -444,6 +444,10 @@ button {
   align-items: start;
 }
 
+.student-panel[data-display-mode="landscape"] {
+  overflow-x: auto;
+}
+
 .student-panel .video-shell video,
 .student-panel .video-image,
 .student-panel .video-placeholder {
@@ -505,9 +509,39 @@ button {
   gap: 16px;
 }
 
+.student-panel[data-display-mode="landscape"] .student-room-shell {
+  width: max(100%, 560px);
+  grid-template-columns: minmax(0, 340px) minmax(180px, 1fr);
+  grid-template-areas:
+    "main controls"
+    "main notices"
+    "main cctv";
+  gap: 16px;
+}
+
+.student-panel[data-display-mode="landscape"] .student-room-shell > .student-control-row {
+  grid-area: controls;
+}
+
+.student-panel[data-display-mode="landscape"] .student-room-shell > .student-notices {
+  grid-area: notices;
+}
+
+.student-panel[data-display-mode="landscape"] .student-room-shell > .student-room-main {
+  grid-area: main;
+}
+
+.student-panel[data-display-mode="landscape"] .student-room-shell > .student-cctv-section {
+  grid-area: cctv;
+}
+
 .student-control-row {
   display: grid;
   gap: 10px;
+}
+
+.student-panel[data-display-mode="landscape"] .student-control-row--room {
+  grid-template-columns: 1fr;
 }
 
 .student-control-row > *:only-child {
@@ -697,12 +731,12 @@ button {
 }
 
 .student-video-landscape-ui {
-  width: 360px;
-  max-width: 360px;
+  width: 390px;
+  max-width: 390px;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 16px;
-  transform: rotate(90deg) scale(0.95);
+  gap: 12px;
+  transform: rotate(90deg);
   transform-origin: center;
   pointer-events: auto;
 }
@@ -727,7 +761,7 @@ button {
 .student-video-landscape-center {
   display: grid;
   place-items: center;
-  min-height: 208px;
+  min-height: 230px;
 }
 
 .student-video-landscape-center .student-video-pledge-display,
@@ -795,10 +829,11 @@ button {
   }
 
   .student-panel[data-display-mode="landscape"] .student-room-shell {
-    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.9fr);
+    width: 100%;
+    grid-template-columns: minmax(0, 340px) minmax(280px, 1fr);
     grid-template-areas:
-      "controls controls"
-      "notices notices"
+      "main controls"
+      "main notices"
       "main cctv";
     gap: 18px;
   }
