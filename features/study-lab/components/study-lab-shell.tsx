@@ -25,6 +25,10 @@ export function StudyLabShell() {
         ? "연결됨"
         : "로그인 필요";
   const bannerMessage = getVisibleBannerMessage(firebaseViewer.message);
+  const studentPrivacyMessage =
+    activeView === "student"
+      ? "카메라 화면은 현재 본인 확인용으로만 표시됩니다. 스터디 카페 안에서 다른 사용자에게 자동으로 공개되지 않으니 편하게 이용해 주세요."
+      : null;
   const statusBadges = (
     <>
       <span className="pill" data-tone={authTone}>
@@ -49,6 +53,8 @@ export function StudyLabShell() {
         ) : (
           <div className="hero-badges">{statusBadges}</div>
         )}
+
+        {studentPrivacyMessage ? <p className="subtle hero-support-copy">{studentPrivacyMessage}</p> : null}
 
         {bannerMessage ? (
           <div className="banner" data-tone="danger">

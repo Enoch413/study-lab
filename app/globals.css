@@ -156,6 +156,10 @@ button {
   margin-left: auto;
 }
 
+.hero-support-copy {
+  margin-top: -2px;
+}
+
 .board-grid {
   display: grid;
   gap: 16px;
@@ -302,6 +306,10 @@ button {
   display: grid;
   gap: 10px;
   margin-top: 16px;
+}
+
+.action-support-copy {
+  margin-top: 12px;
 }
 
 .button-row > *:only-child {
