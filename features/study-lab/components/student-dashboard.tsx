@@ -132,79 +132,81 @@ export function StudentDashboard(props: StudentDashboardProps) {
             <MetricCard label="질문" value={formatQuestionStatus(props.questionStatus)} />
           </div>
 
-          <LiveVideoTile
-            title="카메라"
-            subtitle="카메라 미리보기"
-            stream={props.stream}
-            mirrored
-            tone={cameraTone}
-            statusText={props.cameraStatus === "ON" ? "실시간" : "꺼짐"}
-            className={`student-video-shell student-video-shell--${displayMode}`}
-            footerText={footerText}
-            overlayContent={
-              <>
-                <div className="student-video-tools">
-                  <div className="student-video-segmented" role="group" aria-label="카메라 화면 전환">
-                    <button
-                      className="student-video-segment"
-                      data-active={displayMode === "portrait"}
-                      onClick={() => setDisplayMode("portrait")}
-                      type="button"
-                    >
-                      세로
-                    </button>
-                    <button
-                      className="student-video-segment"
-                      data-active={displayMode === "landscape"}
-                      onClick={() => setDisplayMode("landscape")}
-                      type="button"
-                    >
-                      가로
-                    </button>
+          <div className="student-video-bar">
+            <div className="student-video-segmented" role="group" aria-label="카메라 화면 전환">
+              <button
+                className="student-video-segment"
+                data-active={displayMode === "portrait"}
+                onClick={() => setDisplayMode("portrait")}
+                type="button"
+              >
+                세로
+              </button>
+              <button
+                className="student-video-segment"
+                data-active={displayMode === "landscape"}
+                onClick={() => setDisplayMode("landscape")}
+                type="button"
+              >
+                가로
+              </button>
+            </div>
+          </div>
+
+          <div className={`student-video-frame student-video-frame--${displayMode}`}>
+            <LiveVideoTile
+              title="카메라"
+              subtitle="카메라 미리보기"
+              stream={props.stream}
+              mirrored
+              tone={cameraTone}
+              statusText={props.cameraStatus === "ON" ? "실시간" : "꺼짐"}
+              className={`student-video-shell student-video-shell--${displayMode}`}
+              footerText={footerText}
+              overlayContent={
+                <>
+                  <div className="student-video-clock">{formattedStudyClock}</div>
+
+                  <div className="student-video-pledge-shell">
+                    {isEditingPledge ? (
+                      <form className="student-video-pledge-form" onSubmit={handlePledgeSubmit}>
+                        <label className="student-video-pledge-label" htmlFor="student-daily-pledge">
+                          오늘의 각오
+                        </label>
+                        <textarea
+                          ref={pledgeInputRef}
+                          id="student-daily-pledge"
+                          className="student-video-pledge-input"
+                          rows={3}
+                          maxLength={DAILY_PLEDGE_MAX_LENGTH}
+                          placeholder="여기를 눌러서 오늘의 각오를 입력하세요"
+                          value={pledgeText}
+                          onChange={(event) => setPledgeText(event.target.value)}
+                        />
+                        <div className="student-video-pledge-actions">
+                          <span>{trimmedPledgeText.length}/{DAILY_PLEDGE_MAX_LENGTH}</span>
+                          <button className="student-video-action-button" type="submit">
+                            완료
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <button
+                        className="student-video-pledge-display"
+                        onClick={() => setIsEditingPledge(true)}
+                        type="button"
+                      >
+                        <span className="student-video-pledge-label">오늘의 각오</span>
+                        <strong data-empty={!trimmedPledgeText}>
+                          {trimmedPledgeText || "여기를 눌러서 오늘의 각오를 입력하세요"}
+                        </strong>
+                      </button>
+                    )}
                   </div>
-                </div>
-
-                <div className="student-video-clock">{formattedStudyClock}</div>
-
-                <div className="student-video-pledge-shell">
-                  {isEditingPledge ? (
-                    <form className="student-video-pledge-form" onSubmit={handlePledgeSubmit}>
-                      <label className="student-video-pledge-label" htmlFor="student-daily-pledge">
-                        오늘의 각오
-                      </label>
-                      <textarea
-                        ref={pledgeInputRef}
-                        id="student-daily-pledge"
-                        className="student-video-pledge-input"
-                        rows={3}
-                        maxLength={DAILY_PLEDGE_MAX_LENGTH}
-                        placeholder="여기를 눌러서 오늘의 각오를 입력하세요"
-                        value={pledgeText}
-                        onChange={(event) => setPledgeText(event.target.value)}
-                      />
-                      <div className="student-video-pledge-actions">
-                        <span>{trimmedPledgeText.length}/{DAILY_PLEDGE_MAX_LENGTH}</span>
-                        <button className="student-video-action-button" type="submit">
-                          완료
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <button
-                      className="student-video-pledge-display"
-                      onClick={() => setIsEditingPledge(true)}
-                      type="button"
-                    >
-                      <span className="student-video-pledge-label">오늘의 각오</span>
-                      <strong data-empty={!trimmedPledgeText}>
-                        {trimmedPledgeText || "여기를 눌러서 오늘의 각오를 입력하세요"}
-                      </strong>
-                    </button>
-                  )}
-                </div>
-              </>
-            }
-          />
+                </>
+              }
+            />
+          </div>
         </div>
 
         <div className="student-secondary">

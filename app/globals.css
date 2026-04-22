@@ -451,24 +451,44 @@ button {
   min-height: 0;
 }
 
+.student-video-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.student-video-frame {
+  display: flex;
+  width: 100%;
+}
+
+.student-video-frame--portrait {
+  justify-content: center;
+}
+
+.student-video-frame--landscape {
+  justify-content: stretch;
+}
+
 .student-video-shell {
+  width: 100%;
   min-height: 0;
+  flex: 0 1 auto;
+}
+
+.student-video-shell--portrait {
+  width: min(100%, 340px);
   aspect-ratio: 4 / 5;
 }
 
 .student-video-shell--landscape {
+  width: 100%;
   aspect-ratio: 16 / 9;
 }
 
-.student-video-tools,
 .student-video-clock,
 .student-video-pledge-shell {
   pointer-events: auto;
-}
-
-.student-video-tools {
-  position: absolute;
-  inset: 58px auto auto 12px;
 }
 
 .student-video-segmented {
@@ -761,11 +781,6 @@ button {
     align-items: start;
   }
 
-  .student-primary .video-shell {
-    min-height: 0;
-    aspect-ratio: 16 / 9;
-  }
-
   .student-secondary {
     align-content: start;
   }
@@ -793,14 +808,10 @@ button {
 
 @media (max-width: 559px) {
   .student-video-clock {
-    inset: 104px 12px auto auto;
+    inset: 58px 12px auto auto;
     min-height: 36px;
     padding: 0 12px;
     font-size: 0.92rem;
-  }
-
-  .student-video-tools {
-    inset: 58px 12px auto 12px;
   }
 
   .student-video-segmented {
@@ -809,6 +820,10 @@ button {
 
   .student-video-segment {
     flex: 1 1 0;
+  }
+
+  .student-video-bar {
+    justify-content: stretch;
   }
 
   .student-video-pledge-shell {
